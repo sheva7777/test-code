@@ -1,0 +1,424 @@
+二次入队shaper
+测试步骤：1、按照组网图建立拓扑结构 2、配置通用调度器0下挂的3条队列为SP调度，通用调度器7下挂的2条队列为WRR调度，调度比例为1:2 3、配置协议通路转发，使满足以下转发：  数据流1，进入队列0后，二次入队进入tcont0的队列0； 数据流2，进入队列1后，二次入队进入tcont0的队列0； 数据流3，进入队列2后，二次入队进入tcont1的队列0； 数据流4，进入队列3后，二次入队进入tcont2的队列0； 数据流4，进入队列4后，二次入队进入tcont3的队列0； 4、配置通用调度器0的shaper为80M，通用调度器7的shaper为60M 5、使用测试仪发送数据流1-5各50M，观测tcont0~3收到的流量
+样本点：测试队列： 通用调度器0 输入端0-2挂的队列0-2； 通用调度器7 输入端0-1挂的队列3-4； 发送包长：64 2000 随机
+预期：1、步骤5，tcont0收到的流量为30M，tcont1收到的流量为50M，tcont2收到的流量为20M，tcont3收到的流量为40M
+
+.app.tcl文件：
+
+namespace eval TestApp {
+ 
+
+    proc TestLogic { args } {
+
+		# 环境信息清理动作
+		AsicEnvironmentInfoInitialization
+
+
+        #===================================================================================
+        #  系统变量，测试人员不可更改
+        #===================================================================================
+        set strCmd "===================Begin:$aTestCaseData(testCaseNo)============\033\033"
+        ::Common::CSend $term1 -r strRet1 -s [list "#"] -t 10000 "$strCmd"
+                
+        
+        #获取测试数据，重新封装到数组Data里去
+        CommonArgsToArray $aTestCaseData(args) Data
+		
+	 	#当前目录下执行的测试逻辑文件
+        set strFileName [string map {app.tcl txt} $::TestLib::naLibData(testLogicFileName)]
+      	#使用parseLogicFile执行测试逻辑
+        set res [parseLogicFile $strFileName]
+		#　收集环境信息
+		AsicEnvironmentInfoCollect $res
+
+
+        ::TestLib::ShowTraceMessage -level 10 "result == $res"
+        #返回执行结果
+        return $res
+    }
+    #===================================================================================
+    # 系统函数调用，测试人员不可更改
+    #   测试逻辑执行入口
+    #===================================================================================
+    #!!================================================================
+    #过 程 名：    Main
+    #程 序 包：
+    #功能类别：
+    #过程描述：    （包含范例）
+    #   载入package TestLib
+    #   执行测试逻辑
+    #参数说明：
+    #返 回 值：
+    #   0:  执行成功
+    #   1:  执行失败
+    #函数作者：    Peixing.Lin.(14507)
+    #生成日期：    2003-03-04 20:04:06
+    #修改纪录：
+    #!!================================================================
+    proc Main {} {
+        global auto_path
+        
+        # 默认执行成功
+        set result 0
+        if {([lsearch -exact [namespace children ::] ::TestLib] != -1)} {
+            # 如果TestLib已经载入，则退出；
+            return $result
+        }
+        set sTestLibDir             "Lib/CommonLib"
+        set sScriptsDir             "Scripts"
+        set sTestLogicFilePathName  ""
+        set sAutoTestPath           ""
+        set sTestLibPath            ""
+        # 得到带绝对路径的测试逻辑文件名
+        set sTestLogicFilePathName  [info script]
+        if { $sTestLogicFilePathName == "" } {
+            set sTestLogicFilePathName  [tgetcurfilepath]
+        }
+
+        set lPath   [file split $sTestLogicFilePathName]
+        # 得到Scripts目录名在测试逻辑路径列表中的索引
+        set iIdx -1
+        for { set i 0 } { $i < [llength $lPath] } { incr i} {
+            # 不区分大小写
+            if { [string equal -nocase $sScriptsDir [lindex $lPath $i]] != 1} {
+                continue
+            }
+            set iIdx $i
+            break
+        }
+        
+        #set iIdx    [lsearch -exact $lPath $sScriptsDir]
+        if {  -1 == $iIdx } {
+            puts "TestApp-测试逻辑脚本没有按照目录结构的定义放在规定的位置Scripts目录下!"
+            set result 1
+            return $result
+        } else {
+            #取得自动化工作目录
+            set sAutoTestPath [lindex $lPath 0]
+            for {set i 1} {$i < $iIdx} {incr i} {
+                set sAutoTestPath [file join $sAutoTestPath [lindex $lPath $i]]
+            }
+        }
+
+        # 得到package TestLib函数库所在的路径
+        set sTestLibPath [file join $sAutoTestPath $sTestLibDir]
+
+        # 将自动化体系的函数库的路径加入tcl系统函数库路径变量中
+        lappend auto_path $sTestLibPath
+        # 如果没有包索引文件，则创建
+        if { ![file exists [file join $sTestLibPath "pkgIndex.tcl"]] } {
+            if {[catch [list pkg_mkIndex $sTestLibPath *.tcl] errMsg]} {
+                puts "TestApp: 创建运行引索引失败！"
+                puts "TestApp: 失败信息：$errMsg"
+                set result 1
+                return $result
+            }
+        }
+        # 载入package TestLib
+        set status [ catch { package require TestLib } pkgVersion ]
+        if { $status != 0 } {
+            puts "TestApp: 无法找到TestLib的路径；\n$::auto_path\n错误信息: $pkgVersion\n"
+            set result 1
+            return $result
+        } else {
+            puts "TestApp: 载入测试包TestLib,版本号：$pkgVersion"
+        }
+        # 调用支撑代码接口，执行测试逻辑
+        set result [::TestLib::RunEngine    ::TestApp::TestLogic     $sTestLogicFilePathName]
+
+        return $result
+    }
+}
+
+# 测试逻辑执行入口点
+::TestApp::Main
+#--<end>--
+
+
+.cfg文件：
+[TestLogicInfo]
+testClusterNames= IasGlobal/AsicQOSTc
+productLib=
+toolLib=
+
+# 在TERM1控制台窗口上的建立/恢复配置命令/脚本 
+TERM1,SetupCommands=
+TERM1,RestoreCommands=
+TERM1,SetupScripts=
+#0小时 10分钟 47秒
+[TestCaseData]
+FIELDS,      testCaseNo,        testClusters,      testCaseName,      	testCaseLevel,			args,    
+1, QOS_Shaper_08_010,  IasGlobal/AsicQOSTc, 二次入队_shaper, $chipVersion$execNetWorkQos0$caseLevel0, \
+-vlan0 $oltCvlanId -vlan1 $oltCvlanId1 -vlan2 $oltCvlanId2 -vlan3 $oltCvlanId3 -egr $up_port_num \
+-sfc_id0 0 -sfc_id1 1 -sfc_id2 2 -sfc_id3 3 -rate0 5000 -rate1 3750 \
+-forward {0.0 30000 50000 [expr 1 * 1.0 / 3 * 60 * 1000] [expr 2 * 1.0 / 3 * 60 * 1000]} \
+-forwardMix  " {-streamNO {0 1 2 3 4  } -tsStreamNO {0 1 2 3 4  } -checktype bps \
+                 -forwardValue {0 30 50 [expr 1 * 1.0 / 3 * 60 ] [expr 2 * 1.0 / 3 * 60 ] } }  \
+              " \
+,                                                     
+
+.txt文件：
+#逻辑编号:
+逻辑名称:二次入队_shaper
+逻辑说明:
+组网编号: 
+预置条件:
+测试步骤:
+
+020. 清除统计信息:
+     CntAllClr (-TermName $term3);
+
+020. 清除所有队列统计:
+     QosQueueCntAllClr (-TermName $term3); 
+     
+030 清除ont本地arl表:
+	L2MacAllDel (-TermName $term3);
+
+050 配置TCONT绑定模板:
+	IasOntLineProfileAdd (-TermName $term1  -OntLineProfileType gpon  -ProfileId $ontLineProfileId); 
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId0  -DbaProfileId $dbaProfileId2);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId1  -DbaProfileId $dbaProfileId2);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId2  -DbaProfileId $dbaProfileId2);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId3  -DbaProfileId $dbaProfileId2);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId4  -DbaProfileId $dbaProfileId2);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId5  -DbaProfileId $dbaProfileId2);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId6  -DbaProfileId $dbaProfileId2);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId7  -DbaProfileId $dbaProfileId2);
+
+050 配置端口加入vlan:
+ 	L2BcSet (-TermName $term3 -vlan $Data(vlan0) -user_vlan $Data(vlan0) -egr $Data(egr)); 
+ 	L2BcSet (-TermName $term3 -vlan $Data(vlan1) -user_vlan $Data(vlan1) -egr $Data(egr));
+ 	L2BcSet (-TermName $term3 -vlan $Data(vlan2) -user_vlan $Data(vlan2) -egr $Data(egr));
+ 	L2BcSet (-TermName $term3 -vlan $Data(vlan3) -user_vlan $Data(vlan3) -egr $Data(egr));
+ 	
+090 配置预调度所挂队列: 
+   func_qos_presch_create(-TermName $term3 -id 0);
+   func_qos_presch_create(-TermName $term3 -id 1);
+   QosGssaTableSet (-TermName $term3 -index 17 -eqm_chid 16 -input0_gnum 0 -input1_gnum 1 -input2_gnum 1 -input3_gnum 1 -input4_gnum 1 -input5_gnum 1 -input6_gnum 1 -input7_gnum 1); 
+   QosGssaTableSet (-TermName $term3 -index 18 -eqm_chid 16 -input0_gnum 0 -input1_gnum 0 -input2_gnum 0 -input3_gnum 0 -input4_gnum 0 -input5_gnum 0 -input6_gnum 0 -input7_gnum 0);
+
+   
+090 配置预调度的调度器shaper: 
+   QosShtTableSet (-TermName $term3 -index 1 -xir $Data(rate0) -xbs 15625);
+   QosSsctTableSet (-TermName $term3 -index 17 -pir_shp_mnum 1 -sshp_mode 0);
+   QosShtTableSet (-TermName $term3 -index 18 -xir $Data(rate1) -xbs 15625);
+   QosSsctTableSet (-TermName $term3 -index 17 -pir_shp_mnum 1 -sshp_mode 0);
+
+
+    AsicCurCfgGet (-TermName $term3 );
+    
+080 配置预调度队列入队映射表:
+    GponMapSfcSet(-TermName $term3 -sfc_id 0 -pre_sch_en 1 -valid 1 -pre_sch 0);
+    GponMapSfcSet(-TermName $term3 -sfc_id 1 -pre_sch_en 1 -valid 1 -pre_sch 0);
+    GponMapSfcSet(-TermName $term3 -sfc_id 2 -pre_sch_en 1 -valid 1 -pre_sch 0);
+    GponMapSfcSet(-TermName $term3 -sfc_id 3 -pre_sch_en 1 -valid 1 -pre_sch 0);
+    GponMapSfcSet(-TermName $term3 -sfc_id 4 -pre_sch_en 1 -valid 1 -pre_sch 0);
+    GponMapSfcSet(-TermName $term3 -sfc_id 5 -pre_sch_en 1 -valid 1 -pre_sch 1);
+    GponMapSfcSet(-TermName $term3 -sfc_id 6 -pre_sch_en 1 -valid 1 -pre_sch 1);
+    GponMapSfcSet(-TermName $term3 -sfc_id 7 -pre_sch_en 1 -valid 1 -pre_sch 1);
+    
+
+     
+130 往测试队列发送报文:
+    QosCheckNoFullStremMixData ( \
+                        -OltSvlanId $oltSvlanId -BlackStreamFlg $blackStreamFlg \
+                        -TsuID $tsuID -StreamSum 5 -Speed 25 \
+	                    -SendPort $sendPort -StaPort $staPort -StatMode $statMode -Vlan "$Data(vlan0) $Data(vlan0) $Data(vlan1) $Data(vlan2) $Data(vlan3)" \
+	                    -Pri $port5_vlanPri -SMac $port5_sourceMAC -DMac $port5_destinationMAC \
+                        -SampleTimes $sampleTimes -PktLenList $pktLenList \
+                        -SaveCfgFile $saveCfgtoFile -StaItem $statItem \
+                        -StatIteStopStream $statIteStopStream \
+						-AllowError $allowErrorQOSbps \
+						-AllowErrorFittery $allowErrorFittery \
+						-PayLoad  INCRBYTE \
+                        );
+
+资源释放：
+010 删除预调度的调度器shaper:
+   QosSsctTableSet (-TermName $term3 -index 17 -pir_shp_mnum 0 -sshp_mode 0);
+   QosSsctTableSet (-TermName $term3 -index 18 -pir_shp_mnum 0 -sshp_mode 0);
+
+020 延迟一段时间:
+    IasCommonDelay( -Time $waitTime);
+    
+050 删除端口加入vlan:
+ 	L2BcAllDel (-TermName $term3 -vlan $Data(vlan0)); 
+ 	L2BcAllDel (-TermName $term3 -vlan $Data(vlan1));
+ 	L2BcAllDel (-TermName $term3 -vlan $Data(vlan2));
+ 	L2BcAllDel (-TermName $term3 -vlan $Data(vlan3));
+ 	
+
+
+100 恢复二次入队的GSSA表配置:
+ 	QosGssaTableSet (-TermName $term3 -index 17 -schrule_sel 0 -input0_gnum 7 \
+ 	-input1_gnum 6 -input2_gnum 5 -input3_gnum 4 -input4_gnum 3 -input5_gnum 2 -input6_gnum 1 -input7_gnum 0);
+
+    
+110 恢复TCONT绑定模板:
+	IasOntLineProfileAdd (-TermName $term1  -OntLineProfileType gpon  -ProfileId $ontLineProfileId);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId1  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId2  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId3  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId4  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId5  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId6  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId7  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId0  -DbaProfileId $dbaProfileId);
+
+234.停流:
+    QosTsuRemoveStream (-TsuID $tsuID -Port $sendPort);
+    AsicCurCfgGet (-TermName $term3 );
+
+部分函数：
+
+	#!!================================================================
+	#  过 程 名：	IasOntLineProfileAdd
+	#  函数说明：	创建并进入指定的ONT线路模板配置模式
+	#  参数说明：
+	#               -TermName:           (必选)窗口名； 
+	#               -OntLineProfileType:(必选)线路模板类型gpon或epon
+	#               -ProfileId:         (可选)ONT线路模板编号
+    #               -ProfileName:       (可选)ONT线路模板名
+	#  返 回 值：	
+	#			  错误返回错误列表,正确无返回值
+	#
+	#  注意事项： 
+	#  使用实例： 
+	#               IasOntLineProfileAdd -TermName TERM1 -OntLineProfileType gpon -ProfileId 30
+	#  对应命令： 
+	#               ont-lineprofile gpon profile-id 30
+	#               
+	#	   
+	#  作    者：   xiaofei 00110447  
+	#  生成时间：   2008-8-18
+	#  修改纪录：   2008-8-28 x00110447 修改命令行
+	#               2008-8-30 x00110447 添加Suc001
+	#              
+	#!!================================================================
+	
+	proc IasOntLineProfileAdd { args } {
+	    #-----------------------------------
+		#  定义私有标签码
+		#-----------------------------------
+		
+		#--------------------------------------------
+		# 定义CommonCommand的函数的各个参数
+		#--------------------------------------------
+		#1.返回值规则列表: 
+		set Err001 {Failure:\s*The\s*profile\s*type\s*is\s*not\s*EPON}
+		set Err001Msg {模板类型不是EPON,无法进入EPON线路配置模式,请进入GPON模板配置模式}
+		set Err002 {Failure:\s*The\s*profile\s*type\s*is\s*not\s*GPON}
+		set Err002Msg {模板类型不是GPON,无法进入GPON线路配置模式,请进入GPON模板配置模式}
+		set Err003 {Failure:\s*The\s*profile\s*name\s*is\s*different\s*with\s*the\s*name\s*which\s*is\s*used\s*by\s*the\s*input\s*profile\s*ID}
+		set Err003Msg {模板名称与所输入的模板ID使用的名称不同,请使用指定ID的模板名称}
+		set Err004 {Failure:\s*The\s*profile\s*number\s*has\s*already\s*reach\s*the\s*upper\s*limit}
+		set Err004Msg {模板已达最大规格}
+		set Err005 {Failure:\s*The\s*profile\s*name\s*is\s*not\s*the\s*default\s*name}
+		set Err005Msg {模板名称不是输入模板的默认名称,如果使用默认名称请与当前模板匹配的默认名称}
+		set Err006 {Failure:\s*The\s*profile\s*does\s*not\s*exist}
+		set Err006Msg {输入模板不存在}    
+		set Err007 {Failure:\s*The\s*input\s*profile\s*type\s*is\s*wrong}
+		set Err007Msg {输入的模板类型错误}
+		set Suc001 {config.\S+.\S+profile\S+}
+		set returnPara {Err001 Err002 Err003 Err004 Err005 Err006 Err007 Suc001}
+		
+		
+
+		#2. 设置目标模式(可选);
+	    set mode "CfgMode" 
+	  
+        #3. 设置命令行
+        set cmds {ont-lineprofile %OntLineProfileType% [profile-id %ProfileId%] [profile-name %ProfileName%]}
+                
+	    
+		#5. 构建最后发送的命令的参数;
+		set cmd {CommonCommand -Cmds "$cmds" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S [list "#" ] -regexp 1 -T 10000}
+		
+		set ret [eval $cmd] 
+		if {[string index $ret 0] == 0} {
+		 set ret1 [CommonCommand -Cmds "quit" -RetList "$returnPara" -VarList "$args" -S [list "#"] -regexp 1 -T 10000]
+		}
+		return $ret
+	
+	} ;# end of proc IasOntLineProfileAdd
+#===============================================================
+#---------------------------测试记录----------------------------
+#===============================================================
+
+
+
+    #!!================================================================
+    #  过 程 名：	IasNewModeOntTcontBindUndo
+    #  函数说明：	ONT线路模板中T-CONT解绑定DBA模板ID
+	#  参数说明：
+	#               -TermName：      (必选)窗口名；
+	#               -ProfileId:     (必选)ONT线路模板编号;
+	#               -TcontId:       (必选)T-CONT编号;
+	#         #     -XponMode:      (可选)默认为gpon,可以输入为epon
+	#  返 回 值：
+	#               错误返回错误返回值如Err001
+	#  注意事项： 
+	#  使用实例： 	
+	#               IasNewModeOntTcontBindUndo -TermName TERM1 -ProfileId 30 -TcontId 1
+	#  对应命令： 
+	#               undo tcont 2 
+	#	   
+	#  作    者：   肖飞 00110447
+	#  生成时间：   2008-8-19
+	#  修改纪录：   2008-08-21 xiaofei 00110447 增加交互代码    
+	#               2008-08-27 ningwenqun 00102867 修改命令下发模式内容 
+	#               2008-09-17 xiaofei 00110447 增加提交数据部分
+	#!!================================================================
+	
+	proc IasNewModeOntTcontBindUndo { args } {
+	    #-----------------------------------
+		#  定义私有标签码
+		#-----------------------------------
+		set XponMode gpon
+		#--------------------------------------------
+		# 定义CommonCommand的函数的各个参数
+		#--------------------------------------------
+		#1.返回值规则列表:
+		set Suc001  {\(y/n\)\[n\]:} 
+		set Err001 {Failure:\s*The\s*input\s*DBA\s*profile\s*does\s*not\s*exist}
+		set Err001Msg {输入的DBA模板不存在}
+		set Err002 {Failure:\s*Default\s*T\-CONT\s*can\s*not\s*be\s*unbound}
+		set Err002Msg {默认T-CONT无法解除与DBA绑定关系}
+		set Err003 {Failure:\s*The\s*input\s*T-CONT\s*is\s*not\s*bound\s*with\s*any\s*DBA\s*profile}
+		set Err003Msg {输入的T-CONT没有绑定任何DBA模板,无需解除绑定}
+		
+		set returnPara {Suc001 Err001 Err002 Err003}
+		
+		#2.定义命令生成表达式;
+		set cmds {undo tcont %TcontId%}
+
+		#3. 设置目标模式(可选);
+		CommonArgsGet $args -ProfileId ProfileId -XponMode XponMode -TermName TermName
+	        set mode "ONTLINEPROFILE $XponMode $ProfileId" 
+	  
+	   	#4. sendPara参数，设置tsend发送命令需要的参数-s -t等;
+		set Prompt  [list "#" "\(y/n\)\[n\]:"]
+		
+		set TimeOut 10000
+		
+		#5. 构建最后发送的命令的参数;
+		for {set i 0} {$i < 5} {incr i} {
+		  set ret [CommonCommand -Cmds "$cmds" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S $Prompt -T $TimeOut ]
+		  switch -regexp -- $ret { 
+		  	Suc001 {
+                 set cmds {y} 
+		  	} 
+		  	default { 
+		  		set ret2 [IasNewModeOntProfileDataCommit -TermName $TermName]
+                 return $ret
+            }
+		  	
+		  };# end of swtich
+		};# end of for 
+       # 6. 未知错误
+       return Error
+	
+	} ;# end of proc  IasNewModeOntTcontBindUndo
+#===============================================================
+#---------------------------测试记录----------------------------
+#===============================================================
