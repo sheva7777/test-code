@@ -422,3 +422,833 @@ FIELDS,      testCaseNo,        testClusters,      testCaseName,      	testCaseL
 #===============================================================
 #---------------------------测试记录----------------------------
 #===============================================================
+
+
+#!+================================================================
+#  版权(C) 2005-2012，华为技术有限公司             
+#==================================================================
+#                                                                  
+#!!================================================================
+#  过 程 名：   L2BcSetChip
+#  函数说明:   配置某个vlan内所有的广播用户
+#  参数说明：
+#               -TermName   ：  	  (必选)窗口名；
+#               -vlan：  	  ；
+#				
+#             
+#             
+#  返 回 值：  
+#                执行成功；           
+#					返回 0 成功码；    
+#                执行失败；            
+#                			返回错误码;
+#  注意事项：
+#  使用实例：    L2BcSetChip  -TermName $term -vlan XXX
+#		    
+#		   
+#  对应命令：
+#  
+#  作    者： 
+#  生成时间： 
+#  修改纪录：   
+#               
+#!!================================================================
+
+proc  L2BcSetChip { args } { 
+	
+	#-----------------------------------
+	#  定义私有标签码
+	#-----------------------------------
+	set Suc001Msg {Command execute success!}
+	set Suc001    {\s*succ\s*}
+	
+	set Err001Msg {Command execute error!}
+	set Err001    {\s*error\s*} 
+
+	set Err002Msg {Command execute error!}
+	set Err002    {\s*(fail\.)\s*} 
+	
+	#--------------------------------------------
+	# 定义CommonCommand的函数的各个参数
+	#--------------------------------------------
+	#1.返回值规则列表:
+	set returnPara {Err001 Err002 Suc001}
+    
+	#2.定义命令生成表达式;
+	set cmds {cli home/cli/chip/l2/bc_set -v vlan %vlan% fid %fid% egr %egr% valid %valid% }
+	
+    #3. 设置目标模式(可选);
+	set mode "SDK"    
+	
+	set ret [CommonCommand -Cmds "\n" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S [list "\(y/n\)\[n\]:" "#" ">"] -T 20000] 
+	
+	set ret [CommonCommand -Cmds "$cmds" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S [list "\(y/n\)\[n\]:" "#" ">"] -T 20000] 
+	
+	#根据命令行特点，退回上层模式
+	set ret1 [eval AsicSdkModeChange $args] 
+	
+	return $ret
+	
+} ;# end of proc 
+#=======================================================
+#--------  测试记录  -----------------------------------
+#=======================================================
+# 
+
+
+#!+================================================================
+#  版权(C) 2005-2012，华为技术有限公司 综合硬件PDU            
+#==================================================================
+#                                                                  
+#!!================================================================
+#  过 程 名：   func_qos_presch_create
+#  函数说明:     qos  presch_create
+#  参数说明：
+#               -TermName   ：  	  (必选)窗口名；
+#
+#               -Id         ：  	  ；
+#             
+#             
+#  返 回 值：  
+#                执行成功；           
+#					返回 0 成功码；    
+#                执行失败；            
+#                			返回错误码;
+#  注意事项：   
+#  使用实例：   func_qos_presch_create -TermName $term -Id XXX
+#		    
+#		   
+#  对应命令：    
+#  
+#  作    者： 工具自动生成 
+#  生成时间： 2015-04-13 19:12:31
+#  修改纪录：   
+#               
+#!!================================================================
+
+proc  func_qos_presch_create { args } { 
+	
+	#-----------------------------------
+	#  定义私有标签码
+	#-----------------------------------
+	set Suc001Msg {Command execute success!}
+	set Suc001    {\s*succ\s*}       
+	
+	set Err001Msg {Command execute error!}
+	set Err001    {\s*error\s*} 
+	
+	set Err002Msg {Invalid param!}
+	set Err002    {Invalid\s*parameter}  
+	
+	set Err003Msg {Parameter number too many!}
+	set Err003    {Parameter\s*[\w ]*\s*many}  
+	
+	set Err004Msg {Invalid command!}
+	set Err004    {(Invalid|Unknown|Unrecognized|Incomplete)\s*command}  
+	
+	set Err005Msg {param missed!}
+	set Err005    {param\s*missed}  
+	
+	#--------------------------------------------
+	# 定义CommonCommand的函数的各个参数
+	#--------------------------------------------
+	#1.返回值规则列表:
+	set returnPara {Err001 Err002 Err003 Err004 Err005 Suc001}
+    
+	#2.定义命令生成表达式;
+	set cmds {cli home/cli/func/qos/presch_create -v [id %id%]}
+	
+	#3. 设置目标模式(可选);
+	set mode "SDK"  
+	
+	set ret [CommonCommand -Cmds "\n" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S [list "\(y/n\)\[n\]:" "#" ">"] -T 20000] 
+    
+	set ret [CommonCommand -Cmds "$cmds" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S [list "\(y/n\)\[n\]:" "#" ">"] -T 20000] 
+	
+	return $ret
+	
+} ;# end of proc 
+#=======================================================
+#  ------  测试记录  -----------------------------------
+#=======================================================
+# 
+
+
+#!+================================================================
+#  版权(C) 2005-2012，华为技术有限公司 综合硬件PDU            
+#==================================================================
+#                                                                  
+#!!================================================================
+#  过 程 名：   QosGssaTableSet
+#  函数说明:     
+#  参数说明：
+#               -TermName   ：  	  (必选)窗口名；
+#               -index      ：  	  ；
+#               -eqm_chid   ：  	  ；
+#               -schrule_sel ：  	  ；
+#               -input0_gnum ：  	  ；
+#               -input1_gnum ：  	  ；
+#               -input2_gnum ：  	  ；
+#               -input3_gnum ：  	  ；
+#               -input4_gnum ：  	  ；
+#               -input5_gnum ：  	  ；
+#               -input6_gnum ：  	  ；
+#               -input7_gnum ：  	  ；
+#               -input8_gnum ：  	  ；
+#               -input9_gnum ：  	  ；
+#               -input10_gnum ：  	  ；
+#               -input11_gnum ：  	  ；
+#               -input12_gnum ：  	  ；
+#               -input13_gnum ：  	  ；
+#               -input14_gnum ：  	  ；
+#               -input15_gnum ：  	  ；
+#             
+#             
+#  返 回 值：  
+#                执行成功；           
+#					返回 0 成功码；    
+#                执行失败；            
+#                			返回错误码;
+#  注意事项：   
+#  使用实例：   QosGssaTableSet -TermName $term -index XXX -eqm_chid XXX -schrule_sel XXX -input0_gnum XXX -input1_gnum XXX -input2_gnum XXX -input3_gnum XXX -input4_gnum XXX -input5_gnum XXX -input6_gnum XXX -input7_gnum XXX -input8_gnum XXX -input9_gnum XXX -input10_gnum XXX -input11_gnum XXX -input12_gnum XXX -input13_gnum XXX -input14_gnum XXX -input15_gnum XXX
+#		    
+#		   
+#  对应命令：    
+#  
+#  作    者： zhangjiefeng 00196392
+#  生成时间： 2014-01-24 15:38:30
+#  修改纪录：   
+#               
+#!!================================================================
+proc  QosGssaTableSet { args } {
+    ##运行set aw
+    set ret [eval QosGssaTableSetOrg $args] 
+	if {0 != [lindex $ret 0]} {
+            ::TestLib::ShowTraceMessage -level 10 -color RED -msg \
+            "\"Set\" 命令执行失败，请检查！" 
+	        return $ret
+	};#endif
+	
+	upvar L2GetFlag L2GetFlagDef
+	catch {set L2GetFlag $L2GetFlagDef} msg
+	
+    CommonArgsGet $args -TermName termName -L2GetFlag L2GetFlag
+	if {[info exists L2GetFlag] && ("on" == $L2GetFlag)} {
+	
+	    ::TestLib::ShowTraceMessage -level 10 -color BLUE -msg \
+        "对比测试Get命令行返回值！" 
+	            
+	    # 获取并组合匹配项
+	    set cmpRet ""
+	    set getParam ""
+	    # 函数参数列表
+	    set mapRet {index eqm_chid schrule_sel input0_gnum input1_gnum input2_gnum input3_gnum input4_gnum input5_gnum input6_gnum input7_gnum input8_gnum input9_gnum input10_gnum input11_gnum input12_gnum input13_gnum input14_gnum input15_gnum }
+	    # 格式为16进制参数
+	    set x_Ret ""
+	    # 格式为10进制参数
+	    set d_Ret "index eqm_chid schrule_sel input0_gnum input1_gnum input2_gnum input3_gnum input4_gnum input5_gnum input6_gnum input7_gnum input8_gnum input9_gnum input10_gnum input11_gnum input12_gnum input13_gnum input14_gnum input15_gnum"
+	    # 格式为字符串
+	    set str_Ret ""
+	    # get需调用参数
+	    set output_Ret "index"
+        
+        #组合get所用参数
+        foreach j $output_Ret {
+        	
+        	set cmpDef [regexp -inline -all -- "\-$j\\s\+\(\\S\+\)" $args]
+        	set cmpCount [lindex $cmpDef 0]
+        	set cmpC [lindex $cmpDef 1]
+        	
+        	# 格式转换
+        	if {(-1 != [lsearch $x_Ret $j]) && ("" != $cmpC)} {
+                set getParam [concat $getParam -$j 0x[format %x $cmpC] ]
+        	} elseif {(-1 != [lsearch $d_Ret $j]) && ("" != $cmpC)} {
+                set getParam [concat $getParam -$j [format %d $cmpC] ]
+        	} elseif {(-1 != [lsearch $str_Ret $j]) && ("" != $cmpC)} {
+                set getParam [concat $getParam -$j $cmpC ]
+        	} else {
+                set getParam [concat $getParam $cmpCount]
+        	};#endelseif
+        	
+        };#endforeach 
+        
+        #组合cmp所用参数
+        foreach j $mapRet {
+        	
+        	set cmpDef [regexp -inline -all -- "\-$j\\s\+\(\\S\+\)" $args]
+        	set cmpCount [lindex $cmpDef 0]
+        	set cmpC [lindex $cmpDef 1]
+        	
+        	# 格式转换
+        	if {(-1 != [lsearch $x_Ret $j]) && ("" != $cmpC)} {
+                set cmpRet [concat $cmpRet -$j 0x[format %x $cmpC] ]
+        	} elseif {(-1 != [lsearch $d_Ret $j]) && ("" != $cmpC)} {
+                set cmpRet [concat $cmpRet -$j [format %d $cmpC] ]
+        	} elseif {(-1 != [lsearch $str_Ret $j]) && ("" != $cmpC)} {
+                set cmpRet [concat $cmpRet -$j $cmpC ]
+        	} else {
+                set cmpRet [concat $cmpRet $cmpCount]
+        	};#endelseif
+        	        	
+        };#endforeach
+        puts "cmpRet==$cmpRet getParam==$getParam"
+        
+        set ret [eval QosGssaTableGetOrg -TermName $termName $getParam -CmpList {$cmpRet}]
+	    # 判断 get 是否成功;
+	    if {0 != [lindex $ret 0]} {
+            ::TestLib::ShowTraceMessage -level 10 -color RED -msg \
+            "\"Set\" 之后 \"Get\" 返回值不匹配，请检查！返回值为：$ret" 
+	        return $ret
+	    };#endif	    
+	};#endif
+	
+	return $ret
+}
+
+proc  QosGssaTableGetOrg { args } { 
+	
+	#-----------------------------------
+	#  定义私有标签码
+	#-----------------------------------
+	set Suc001Msg   {Command execute success!}
+	set Suc001     	{index\s*:\s*([0-9]+).*schrule_sel\s*:\s*(\w+).*eqm_chid\s*:\s*([0-9]+).*input0_gnum\s*:\s*([0-9]+).*input1_gnum\s*:\s*([0-9]+).*input2_gnum\s*:\s*([0-9]+).*input3_gnum\s*:\s*([0-9]+).*input4_gnum\s*:\s*([0-9]+).*input5_gnum\s*:\s*([0-9]+).*input6_gnum\s*:\s*([0-9]+).*input7_gnum\s*:\s*([0-9]+).*input8_gnum\s*:\s*([0-9]+).*input9_gnum\s*:\s*([0-9]+).*input10_gnum\s*:\s*([0-9]+).*input11_gnum\s*:\s*([0-9]+).*input12_gnum\s*:\s*([0-9]+).*input13_gnum\s*:\s*([0-9]+).*input14_gnum\s*:\s*([0-9]+).*input15_gnum\s*:\s*([0-9]+)}
+    set Suc001Ret   {index  schrule_sel eqm_chid input0_gnum input1_gnum input2_gnum input3_gnum input4_gnum input5_gnum input6_gnum input7_gnum input8_gnum input9_gnum input10_gnum input11_gnum input12_gnum input13_gnum input14_gnum input15_gnum }
+	
+	set Suc002Msg {Command execute success!}
+	set Suc002    {\s*succ\s*}
+	
+	set Err001Msg {Command execute error!}
+	set Err001    {\s*error\s*} 
+
+	set Err002Msg {Command execute error!}
+	set Err002    {\s*(fail\.)\s*} 
+	
+	#--------------------------------------------
+	# 定义CommonCommand的函数的各个参数
+	#--------------------------------------------
+	#1.返回值规则列表:
+	set returnPara {Err001 Err002 Suc001 Suc002 }
+    
+	#2.定义命令生成表达式;
+	#set cmds {cli /home/cli/chip_ext/qos_gssa_table_get -v index %index%} 
+	set cmds {cli /home/cli/chip/eqm/eqm_gssa_gen_sch_attr_get  -v index %index%}
+
+	#3. 设置目标模式(可选);
+	set mode "SDK"    
+	
+	set ret [CommonCommand -Cmds "\n" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S [list "\(y/n\)\[n\]:" "#" ">"] -T 20000] 
+	
+	set ret [CommonCommand -Cmds "$cmds" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S [list "\(y/n\)\[n\]:" "#" ">"] -T 20000] 
+
+	#--------------------------------------------
+	# 匹配返回值
+	#--------------------------------------------
+	set  cmpList ""
+	CommonArgsGet $args -CmpList cmpList
+
+	#检查返回值，如果匹配信息直接返回ret
+	if {0 != [lindex $ret 0] || "" == $cmpList } {
+		return $ret
+	}
+	#根据用户输入的值与返回值进行匹配	
+	set cmpVar \{\{[lrange $ret 2 end]\}\}
+	
+	if {0 == [CommonRegexpMatchMult $cmpList cmpVar]} {
+		return "0 Suc020 $ret"
+
+	} else {
+		return Err020 
+
+	} ; #end if
+	
+	return $ret
+		
+} ;# end of proc 
+
+proc  QosGssaTableSetOrg { args } { 
+	
+	#-----------------------------------
+	#  定义私有标签码
+	#-----------------------------------
+	set Suc001Msg {Command execute success!}
+	set Suc001    {\s*succ\s*}
+	
+	set Err001Msg {Command execute error!}
+	set Err001    {\s*error\s*} 
+
+	set Err002Msg {Command execute error!}
+	set Err002    {\s*fail\s*} 
+		
+	#--------------------------------------------
+	# 定义CommonCommand的函数的各个参数
+	#--------------------------------------------
+	#1.返回值规则列表:
+	set returnPara {Err001 Err002 Suc001}
+    
+	#2.定义命令生成表达式;
+	#set cmds {cli /home/cli/chip_ext/qos_gssa_table_set -v [index %index%] [eqm_chid %eqm_chid%] [schrule_sel %schrule_sel%] [input0_gnum %input0_gnum%] [input1_gnum %input1_gnum%] [input2_gnum %input2_gnum%] [input3_gnum %input3_gnum%] [input4_gnum %input4_gnum%] [input5_gnum %input5_gnum%] [input6_gnum %input6_gnum%] [input7_gnum %input7_gnum%] [input8_gnum %input8_gnum%] [input9_gnum %input9_gnum%] [input10_gnum %input10_gnum%] [input11_gnum %input11_gnum%] [input12_gnum %input12_gnum%] [input13_gnum %input13_gnum%] [input14_gnum %input14_gnum%] [input15_gnum %input15_gnum%]}
+	set cmds {cli /home/cli/chip/eqm/eqm_gssa_gen_sch_attr_set -v [index %index%] [eqm_chid %eqm_chid%] [schrule_sel %schrule_sel%] [input0_gnum %input0_gnum%] [input1_gnum %input1_gnum%] [input2_gnum %input2_gnum%] [input3_gnum %input3_gnum%] [input4_gnum %input4_gnum%] [input5_gnum %input5_gnum%] [input6_gnum %input6_gnum%] [input7_gnum %input7_gnum%] [input8_gnum %input8_gnum%] [input9_gnum %input9_gnum%] [input10_gnum %input10_gnum%] [input11_gnum %input11_gnum%] [input12_gnum %input12_gnum%] [input13_gnum %input13_gnum%] [input14_gnum %input14_gnum%] [input15_gnum %input15_gnum%]}
+
+	#3. 设置目标模式(可选);
+	set mode "SDK"  
+	
+	set ret [CommonCommand -Cmds "\n" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S [list "\(y/n\)\[n\]:" "#" ">"] -T 20000] 
+    
+	set ret [CommonCommand -Cmds "$cmds" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S [list "\(y/n\)\[n\]:" "#" ">"] -T 20000] 
+	
+	return $ret
+	
+} ;# end of proc 
+#=======================================================
+#  ------  测试记录  -----------------------------------
+#=======================================================
+# 
+
+
+#!+================================================================
+#  版权(C) 2005-2012，华为技术有限公司 综合硬件PDU            
+#==================================================================
+#                                                                  
+#!!================================================================
+#  过 程 名：   QosShtTableSet
+#  函数说明:     
+#  参数说明：
+#               -TermName   ：  	  (必选)窗口名；
+#               -index      ：  	  ；
+#               -xir        ：  	  ；
+#               -xbs        ：  	  ；
+#               -shape_mode ：  	  ；
+#             
+#             
+#  返 回 值：  
+#                执行成功；           
+#					返回 0 成功码；    
+#                执行失败；            
+#                			返回错误码;
+#  注意事项：   
+#  使用实例：   QosShtTableSet -TermName $term -index XXX -xir XXX -xbs XXX -shape_mode XXX
+#		    
+#		   
+#  对应命令：    
+#  
+#  作    者： zhangjiefeng 00196392
+#  生成时间： 2014-01-24 15:38:30
+#  修改纪录：   
+#               
+#!!================================================================
+proc  QosShtTableSet { args } {
+    ##运行set aw
+    set ret [eval QosShtTableSetOrg $args] 
+	if {0 != [lindex $ret 0]} {
+            ::TestLib::ShowTraceMessage -level 10 -color RED -msg \
+            "\"Set\" 命令执行失败，请检查！" 
+	        return $ret
+	};#endif
+	
+	upvar L2GetFlag L2GetFlagDef
+	catch {set L2GetFlag $L2GetFlagDef} msg
+	
+    CommonArgsGet $args -TermName termName -L2GetFlag L2GetFlag
+	if {[info exists L2GetFlag] && ("on" == $L2GetFlag)} {
+	
+	    ::TestLib::ShowTraceMessage -level 10 -color BLUE -msg \
+        "对比测试Get命令行返回值！" 
+	            
+	    # 获取并组合匹配项
+	    set cmpRet ""
+	    set getParam ""
+	    # 函数参数列表
+	    set mapRet {index  shape_mode xir xbs }
+	    # 格式为16进制参数
+	    set x_Ret ""
+	    # 格式为10进制参数
+	    set d_Ret "index shape_mode xir xbs "
+	    # 格式为字符串
+	    set str_Ret ""
+	    # get需调用参数
+	    set output_Ret "index"
+        
+        #组合get所用参数
+        foreach j $output_Ret {
+        	
+        	set cmpDef [regexp -inline -all -- "\-$j\\s\+\(\\S\+\)" $args]
+        	set cmpCount [lindex $cmpDef 0]
+        	set cmpC [lindex $cmpDef 1]
+        	
+        	# 格式转换
+        	if {(-1 != [lsearch $x_Ret $j]) && ("" != $cmpC)} {
+                set getParam [concat $getParam -$j 0x[format %x $cmpC] ]
+        	} elseif {(-1 != [lsearch $d_Ret $j]) && ("" != $cmpC)} {
+                set getParam [concat $getParam -$j [format %d $cmpC] ]
+        	} elseif {(-1 != [lsearch $str_Ret $j]) && ("" != $cmpC)} {
+                set getParam [concat $getParam -$j $cmpC ]
+        	} else {
+                set getParam [concat $getParam $cmpCount]
+        	};#endelseif
+        	
+        };#endforeach 
+        
+        #组合cmp所用参数
+        foreach j $mapRet {
+        	
+        	set cmpDef [regexp -inline -all -- "\-$j\\s\+\(\\S\+\)" $args]
+        	set cmpCount [lindex $cmpDef 0]
+        	set cmpC [lindex $cmpDef 1]
+        	
+        	# 格式转换
+        	if {(-1 != [lsearch $x_Ret $j]) && ("" != $cmpC)} {
+                set cmpRet [concat $cmpRet -$j 0x[format %x $cmpC] ]
+        	} elseif {(-1 != [lsearch $d_Ret $j]) && ("" != $cmpC)} {
+                set cmpRet [concat $cmpRet -$j [format %d $cmpC] ]
+        	} elseif {(-1 != [lsearch $str_Ret $j]) && ("" != $cmpC)} {
+                set cmpRet [concat $cmpRet -$j $cmpC ]
+        	} else {
+                set cmpRet [concat $cmpRet $cmpCount]
+        	};#endelseif
+        	        	
+        };#endforeach
+        puts "cmpRet==$cmpRet getParam==$getParam"
+        
+       set ret [eval QosShtTableGetOrg -TermName $termName $getParam -CmpList {$cmpRet}]
+	    # 判断 get 是否成功;
+	    if {0 != [lindex $ret 0]} {
+            ::TestLib::ShowTraceMessage -level 10 -color RED -msg \
+            "\"Set\" 之后 \"Get\" 返回值不匹配，请检查！返回值为：$ret" 
+	        return $ret
+	    };#endif	    
+	};#endif
+	
+	return $ret
+}
+
+proc  QosShtTableGetOrg { args } { 
+	
+	#-----------------------------------
+	#  定义私有标签码
+	#-----------------------------------
+	set Suc001Msg  {Command execute success!}
+	set Suc001     {index\s*:\s*([0-9]+).*shape_mode\s*:\s*([0-9]+).*xir\s*:\s*([0-9]+).*xbs\s*:\s*([0-9]+)}
+    set Suc001Ret  {index shape_mode xir xbs  }
+	
+	set Suc002Msg {Command execute success!}
+	set Suc002    {\s*succ\s*}
+	
+	set Err001Msg {Command execute error!}
+	set Err001    {\s*error\s*} 
+
+	set Err002Msg {Command execute error!}
+	set Err002    {\s*(fail\.)\s*} 
+	
+	#--------------------------------------------
+	# 定义CommonCommand的函数的各个参数
+	#--------------------------------------------
+	#1.返回值规则列表:
+	set returnPara {Err001 Err002 Suc001 Suc002 }
+    
+	#2.定义命令生成表达式;
+	#set cmds {cli /home/cli/chip_ext/qos_sht_table_get -v index %index%}
+    set cmds {cli /home/cli/chip/eqm/eqm_sht_shaper_profile_get -v index %index%}
+                  
+	#3. 设置目标模式(可选);
+	set mode "SDK"    
+	
+	set ret [CommonCommand -Cmds "\n" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S [list "\(y/n\)\[n\]:" "#" ">"] -T 20000] 
+	
+	set ret [CommonCommand -Cmds "$cmds" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S [list "\(y/n\)\[n\]:" "#" ">"] -T 20000] 
+
+	#--------------------------------------------
+	# 匹配返回值
+	#--------------------------------------------
+	set  cmpList ""
+	CommonArgsGet $args -CmpList cmpList
+
+	#检查返回值，如果匹配信息直接返回ret
+	if {0 != [lindex $ret 0] || "" == $cmpList } {
+		return $ret
+	}
+	#根据用户输入的值与返回值进行匹配	
+	set cmpVar \{\{[lrange $ret 2 end]\}\}
+	puts "cmpList=$cmpList"
+	puts "cmpVar=$cmpVar"
+	if {0 == [CommonRegexpMatchMult $cmpList cmpVar]} {
+		return "0 Suc020 $ret"
+
+	} else {
+		return Err020 
+
+	} ; #end if
+	
+	return $ret
+		
+} ;# end of proc 
+
+proc  QosShtTableSetOrg { args } { 
+	puts "==QosShtTableSetOrg==$args"
+	#-----------------------------------
+	#  定义私有标签码
+	#-----------------------------------
+	set Suc001Msg {Command execute success!}
+	set Suc001    {\s*succ\s*}
+	
+	set Err001Msg {Command execute error!}
+	set Err001    {\s*error\s*} 
+
+	set Err002Msg {Command execute error!}
+	set Err002    {\s*fail\s*} 
+		
+	#--------------------------------------------
+	# 定义CommonCommand的函数的各个参数
+	#--------------------------------------------
+	#1.返回值规则列表:
+	set returnPara {Err001 Err002 Suc001}
+    
+	#2.定义命令生成表达式;
+	#set cmds {cli /home/cli/chip_ext/qos_sht_table_set -v [index %index%] [xir %xir%] [xbs %xbs%] [shape_mode %shape_mode%]}
+	set cmds  {cli /home/cli/chip/eqm/eqm_sht_shaper_profile_set -v [index %index%] [xir %xir%] [xbs %xbs%] [shape_mode %shape_mode%]}
+
+	::TestLib::ShowTraceMessage -level 10 -color BLUE -msg "QosShtTableSet -> QosShtTableSetOrg 执行命令行 cli  /home/cli/chip_ext/qos_sht_table_set -v $args 成功"
+	
+	#3. 设置目标模式(可选);
+	set mode "SDK"  
+	
+	set ret [CommonCommand -Cmds "\n" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S [list "\(y/n\)\[n\]:" "#" ">"] -T 20000] 
+    
+	set ret [CommonCommand -Cmds "$cmds" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S [list "\(y/n\)\[n\]:" "#" ">"] -T 20000] 
+	
+	return $ret
+	
+} ;# end of proc 
+#=======================================================
+#  ------  测试记录  -----------------------------------
+#=======================================================
+# 
+
+
+#!+================================================================
+#  版权(C) 2005-2012，华为技术有限公司 综合硬件PDU            
+#==================================================================
+#                                                                  
+#!!================================================================
+#  过 程 名：   QosSsctTableSet
+#  函数说明:     
+#  参数说明：
+#               -TermName   ：  	  (必选)窗口名；
+#               -index      ：  	  ；
+#               -pir_shp_mnum ：  	  ；
+#               -sshp_mode  ：  	  ；
+#               -pir_tk_byte ：  	  ；
+#               -pir_shp_borr_st ：  	  ；
+#             
+#             
+#  返 回 值：  
+#                执行成功；           
+#					返回 0 成功码；    
+#                执行失败；            
+#                			返回错误码;
+#  注意事项：   
+#  使用实例：   QosSsctTableSet -TermName $term -index XXX -pir_shp_mnum XXX -sshp_mode XXX -pir_tk_byte XXX -pir_shp_borr_st XXX
+#		    
+#		   
+#  对应命令：    
+#  
+#  作    者： zhangjiefeng 00196392
+#  生成时间： 2014-01-24 15:38:30
+#  修改纪录：   
+#               
+#!!================================================================
+proc  QosSsctTableSet { args } {
+    ##运行set aw  
+    set sshp_mode 0 
+    CommonArgsGet $args  -sshp_mode sshp_mode -pir_shp_mnum pir_shp_mnum
+    #原来命令行支持sshp_mode值为1、0，当前为bps、pps
+    switch $sshp_mode {
+    	0 {set mode bps}
+    	1 {set mode pps}
+    	default {set mode bps}
+    };#endswitch
+    
+    #参数名称发生变化，进行转换
+    set args [CommonArgsSet $args -sht_idx $pir_shp_mnum -mode $mode]
+    CommonArgsDel args -pshp_mode -pir_shp_borr_s
+    
+    set ret [eval QosSsctTableSetOrg $args] 
+	if {0 != [lindex $ret 0]} {
+            ::TestLib::ShowTraceMessage -level 10 -color RED -msg \
+            "\"Set\" 命令执行失败，请检查！" 
+	        return $ret
+	};#endif
+	
+	upvar L2GetFlag L2GetFlagDef
+	catch {set L2GetFlag $L2GetFlagDef} msg
+	
+    CommonArgsGet $args -TermName termName -L2GetFlag L2GetFlag
+	if {[info exists L2GetFlag] && ("on" == $L2GetFlag)} {
+	
+	    ::TestLib::ShowTraceMessage -level 10 -color BLUE -msg \
+        "对比测试Get命令行返回值！" 
+	            
+	    # 获取并组合匹配项
+	    set cmpRet ""
+	    set getParam ""
+	    # 函数参数列表
+	    set mapRet {index sht_idx   }
+	    # 格式为16进制参数
+	    set x_Ret ""
+	    # 格式为10进制参数
+	    set d_Ret "index sht_idx   "
+	    # 格式为字符串
+	    set str_Ret ""
+	    # get需调用参数
+	    set output_Ret "index"
+        
+        #组合get所用参数
+        foreach j $output_Ret {
+        	
+        	set cmpDef [regexp -inline -all -- "\-$j\\s\+\(\\S\+\)" $args]
+        	set cmpCount [lindex $cmpDef 0]
+        	set cmpC [lindex $cmpDef 1]
+        	
+        	# 格式转换
+        	if {(-1 != [lsearch $x_Ret $j]) && ("" != $cmpC)} {
+                set getParam [concat $getParam -$j 0x[format %x $cmpC] ]
+        	} elseif {(-1 != [lsearch $d_Ret $j]) && ("" != $cmpC)} {
+                set getParam [concat $getParam -$j [format %d $cmpC] ]
+        	} elseif {(-1 != [lsearch $str_Ret $j]) && ("" != $cmpC)} {
+                set getParam [concat $getParam -$j $cmpC ]
+        	} else {
+                set getParam [concat $getParam $cmpCount]
+        	};#endelseif
+        	
+        };#endforeach 
+        
+        #组合cmp所用参数
+        foreach j $mapRet {
+        	
+        	set cmpDef [regexp -inline -all -- "\-$j\\s\+\(\\S\+\)" $args]
+        	set cmpCount [lindex $cmpDef 0]
+        	set cmpC [lindex $cmpDef 1]
+        	
+        	# 格式转换
+        	if {(-1 != [lsearch $x_Ret $j]) && ("" != $cmpC)} {
+                set cmpRet [concat $cmpRet -$j 0x[format %x $cmpC] ]
+        	} elseif {(-1 != [lsearch $d_Ret $j]) && ("" != $cmpC)} {
+                set cmpRet [concat $cmpRet -$j [format %d $cmpC] ]
+        	} elseif {(-1 != [lsearch $str_Ret $j]) && ("" != $cmpC)} {
+                set cmpRet [concat $cmpRet -$j $cmpC ]
+        	} else {
+                set cmpRet [concat $cmpRet $cmpCount]
+        	};#endelseif
+        	        	
+        };#endforeach
+        puts "cmpRet==$cmpRet getParam==$getParam"
+        
+        set ret [eval QosSsctTableGetOrg -TermName $termName $getParam -CmpList {$cmpRet}]
+	    # 判断 get 是否成功;
+	    if {0 != [lindex $ret 0]} {
+            ::TestLib::ShowTraceMessage -level 10 -color RED -msg \
+            "\"Set\" 之后 \"Get\" 返回值不匹配，请检查！返回值为：$ret" 
+	        return $ret
+	    };#endif	    
+	};#endif
+	
+	return $ret
+}
+
+proc  QosSsctTableGetOrg { args } { 
+	
+	#-----------------------------------
+	#  定义私有标签码
+	#-----------------------------------
+	set Suc001Msg  {Command execute success!}
+	set Suc001     {index\s*:\s*([0-9]+).*mode\s*:\s*(\w+).*sht_idx\s*:\s*([0-9]+).*borr_st\s*:\s*(\w+).*pri_tk_byte\s*:\s*([0-9]+).*gadj_tk_byte\s*:\s*([0-9]+)}
+    set Suc001Ret  {index mode sht_idx borr_st pri_tk_byte gadj_tk_byte  }
+	
+	set Suc002Msg {Command execute success!}
+	set Suc002    {\s*succ\s*}
+	
+	set Err001Msg {Command execute error!}
+	set Err001    {\s*error\s*} 
+
+	set Err002Msg {Command execute error!}
+	set Err002    {\s*(fail\.)\s*} 
+	
+	#--------------------------------------------
+	# 定义CommonCommand的函数的各个参数
+	#--------------------------------------------
+	#1.返回值规则列表:
+	set returnPara {Err001 Err002 Suc001 Suc002 }
+    
+	#2.定义命令生成表达式;
+	#set cmds {cli /home/cli/chip_ext/qos_ssct_table_get -v index %index% }
+   	set cmds {cli /home/cli/chip/eqm/eqm_ssct_gen_sch_bind_shaper_profile_get -v index %index% }
+                   
+	#3. 设置目标模式(可选);
+	set mode "SDK"    
+	
+	set ret [CommonCommand -Cmds "\n" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S [list "\(y/n\)\[n\]:" "#" ">"] -T 20000] 
+	
+	set ret [CommonCommand -Cmds "$cmds" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S [list "\(y/n\)\[n\]:" "#" ">"] -T 20000] 
+
+	#--------------------------------------------
+	# 匹配返回值
+	#--------------------------------------------
+	set  cmpList ""
+	CommonArgsGet $args -CmpList cmpList
+
+	#检查返回值，如果匹配信息直接返回ret
+	if {0 != [lindex $ret 0] || "" == $cmpList } {
+		return $ret
+	}
+	#根据用户输入的值与返回值进行匹配	
+	set cmpVar \{\{[lrange $ret 2 end]\}\}
+	
+	if {0 == [CommonRegexpMatchMult $cmpList cmpVar]} {
+		return "0 Suc020 $ret"
+
+	} else {
+		return Err020 
+
+	} ; #end if
+	
+	return $ret
+		
+} ;# end of proc 
+
+proc  QosSsctTableSetOrg { args } { 
+	
+	#-----------------------------------
+	#  定义私有标签码
+	#-----------------------------------
+	set Suc001Msg {Command execute success!}
+	set Suc001    {\s*succ\s*}
+	
+	set Err001Msg {Command execute error!}
+	set Err001    {\s*error\s*} 
+
+	set Err002Msg {Command execute error!}
+	set Err002    {\s*fail\s*} 
+		
+	#--------------------------------------------
+	# 定义CommonCommand的函数的各个参数
+	#--------------------------------------------
+	#1.返回值规则列表:
+	set returnPara {Err001 Err002 Suc001}
+    
+	#2.定义命令生成表达式;
+	#set cmds {cli /home/cli/chip_ext/qos_ssct_table_set -v [index %index%] [pir_shp_mnum %pir_shp_mnum%] [sshp_mode %sshp_mode%] [pir_tk_byte %pir_tk_byte%] [pir_shp_borr_st %pir_shp_borr_st%]}
+	set cmds {cli /home/cli/chip/eqm/eqm_ssct_gen_sch_bind_shaper_profile_set -v [index %index%] [sht_idx %sht_idx%] [mode %mode%] [pri_tk_byte %pri_tk_byte%] [borr_st %borr_st%]}
+
+	#3. 设置目标模式(可选);
+	set mode "SDK"  
+	
+	set ret [CommonCommand -Cmds "\n" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S [list "\(y/n\)\[n\]:" "#" ">"] -T 20000] 
+    
+	set ret [CommonCommand -Cmds "$cmds" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S [list "\(y/n\)\[n\]:" "#" ">"] -T 20000] 
+	
+	return $ret
+	
+} ;# end of proc 
+#=======================================================
+#  ------  测试记录  -----------------------------------
+#=======================================================
+# 
