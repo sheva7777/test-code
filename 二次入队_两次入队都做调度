@@ -1,0 +1,287 @@
+测试步骤：
+1、按照组网图建立拓扑结构 2、配置通用调度器0下挂的队列0-4属于组0，为wrr调度,调度比例为1:2:3:2:2；通用调度器7下挂的3条队列，队列5-7为DRR调度，调度比例为2:2:3 3、配置转发模块，使数据报文进入以上8条队列后，二次入队分别进入tcont0的8个队列 4、配置通用调度器0的shaper为400M，通用调度器1的shaper为200M；配置tcont0的8条队列为等比wrr调度 5、往队列0~7各发100M的流量，使能通用调度器0和1的shaper，观测tcont0~7收到的流量 6、修改tcont0下挂的队列0属于端口组0，队列1属于端口组1，队列2-7属于端口组7，wrr调度，调度比例为2:1:2:1:1:2，使能通用调度器16的shaper为400M，观察tcont0-tcont7收到的流量
+
+样本点：
+报文长度：64 2000 随机
+
+预期结果:
+1、步骤5，tcont0的队列0-4收到的总流量为400M，pps符合比例1:2:3:2:2；队列5-7收到的总流量为200M，bps符合比例2:2:3 2、步骤6，tcont0的队列0-1收到的流量与步骤5一致；队列2-7收到的总流量为shaper剩下的总流量（大概等于400-84-42），pps比例符合 2:1:2:1:1:2
+
+.app.tcl文件同'shaper'
+
+
+.cfg
+
+[TestLogicInfo]
+testClusterNames= IasGlobal/AsicQOSTc
+productLib=
+toolLib=
+
+# 在TERM1控制台窗口上的建立/恢复配置命令/脚本 
+TERM1,SetupCommands=
+TERM1,RestoreCommands=
+TERM1,SetupScripts=
+
+[TestCaseData]
+FIELDS,      testCaseNo,        testClusters,      testCaseName,      	testCaseLevel,			args,    
+1, QOS_Schedule_04_040,  IasGlobal/AsicQOSTc, 二次入队_两次入队都做调度, $chipVersionQosH_L_T$execNetWorkQos0$caseLevel0, \
+-egr $up_port_num -adj 16 \
+-speedPercent 100 \
+-vlan0 $oltCvlanId  -vlan1 $oltCvlanId1 -vlan2 $oltCvlanId2 -vlan3 $oltCvlanId3 \
+-vlan4 $oltCvlanId4 -vlan5 $oltCvlanId5 -vlan6 $oltCvlanId6 -vlan7 $oltCvlanId7 \
+-shaperId0 20 -shaperId1  21 -shaperId2  22 -shaperId3  23 \
+-shaperId4 24 -shaperId5  25 -shaperId6  26 -shaperId7  27 -shaperId8  28 \
+-xir0 62.5 -xir1 31250  \
+-rate0 18750 -rate1 12500 -rate 25000 \
+-xirVal0 31250 -xirVal1 1250 -xirVal2 1562.5 -xirVal3 1875 \
+-xirVal4 2187.5 -xirVal5 2500 -xirVal6 2812.5 -xirVal7 3125 -xirVal8 3437 \
+-forwardMix0 " {-streamNO {{0 1 2 3 4}  {5 6 7}} -tsStreamNO {{0 1 2 3 4}  {5 6 7}} -checktype totalBps \
+                -forwardValue {300 200} } \
+               {-streamNO {0 1 2 3 4} -tsStreamNO {0 1 2 3 4} -checktype bps \
+                -forwardValue {[expr 1 * 300.0/10.0] [expr 2 * 300.0/10.0] [expr 3 * 300.0/10.0] \
+                               [expr 2 * 300.0/10.0] [expr 2 * 300.0/10.0]  } } \
+               {-streamNO {5 6 7} -tsStreamNO {5 6 7} -checktype pps \
+                -forwardValue {1 1 1.5} } \
+            " \
+-forwardMix1 " {-streamNO {{0} {1} {2 3 4 5 6 7}} -tsStreamNO {{0} {1} {2 3 4 5 6 7}} -checktype totalBps \
+                -forwardValue {40 80 [expr 300 - 40 - 80]} } \
+               {-streamNO {2 3 4 5 6 7} -tsStreamNO {2 3 4 5 6 7} -checktype pps \
+                -forwardValue {1 0.5 1 0.5 0.5 1} } \
+            " \
+,
+
+#1、按照组网图建立拓扑结构
+#2、配置通用调度器0下挂的队列0-4属于组0，为drr调度,调度比例为1:2:3:2:2；通用调度器1下挂的3条队列，队列5-7为WRR调度，调度比例为2:2:3
+#3、配置通用调度器16对应tcont0，队列0-7的报文经过二次入队后分别进入tcont0对应的通用调度器17的8个队列；
+#4、配置通用调度器0的shaper为400M，通用调度器1的shaper为200M；配置通用调度器16的8个队列为wrr调度，调度权重全为1
+#5、往队列0~7各发100M的流量，使能通用调度器0和1的shaper，观测tcont0~7收到的流量
+#6、修改tcont0下挂的队列0属于端口组0，队列1属于端口组1，队列2-7属于端口组7，drr调度，调度比例为2:1:2:1:1:2，
+#   使能通用调度器16的shaper为400M，观察tcont0-tcont7收到的流量
+#
+#
+#1、步骤5，tcont0的队列0-4收到的总流量为400M，bps符合比例1:2:3:2:2；队列5-7收到的总流量为200M，pps符合比例2:2:3
+#2、步骤6，tcont0的队列0-1收到的流量与步骤5一致；队列2-7收到的总流量为shaper剩下的总流量（大概等于400-84-42），pps比例符合
+#2:1:2:1:1:2
+#5116与5118差异点：5118 Drr/Wrr配置为配置sts表
+
+
+.txt
+
+#逻辑编号:
+逻辑名称:逻辑端口直接挂队列_DRR调度_H
+逻辑说明:
+组网编号: 
+预置条件:
+测试步骤:
+
+0010. 清除统计信息:
+     CntAllClr (-TermName $term3);
+
+0020. 清除所有队列统计:
+     QosQueueCntAllClr (-TermName $term3); 
+     
+0030. 清除ont本地arl表:
+	 L2MacAllDel (-TermName $term3);
+
+0040 配置TCONT绑定模板:
+	IasOntLineProfileAdd (-TermName $term1  -OntLineProfileType gpon  -ProfileId $ontLineProfileId); 
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId0  -DbaProfileId $dbaProfileId2);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId1  -DbaProfileId $dbaProfileId2);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId2  -DbaProfileId $dbaProfileId2);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId3  -DbaProfileId $dbaProfileId2);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId4  -DbaProfileId $dbaProfileId2);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId5  -DbaProfileId $dbaProfileId2);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId6  -DbaProfileId $dbaProfileId2);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId7  -DbaProfileId $dbaProfileId2);
+ 	
+0050 删除单个广播用户:
+ 	L2BcAllDel (-TermName $term3 -vlan $oltCvlanId );
+ 	L2BcAllDel (-TermName $term3 -vlan $oltCvlanId1 );
+ 	L2BcAllDel (-TermName $term3 -vlan $oltCvlanId2 );
+ 	L2BcAllDel (-TermName $term3 -vlan $oltCvlanId3 );
+ 	L2BcAllDel (-TermName $term3 -vlan $oltCvlanId4 );
+ 	L2BcAllDel (-TermName $term3 -vlan $oltCvlanId5 );
+ 	L2BcAllDel (-TermName $term3 -vlan $oltCvlanId6 );
+ 	L2BcAllDel (-TermName $term3 -vlan $oltCvlanId7 );
+
+0055 IFC删除:
+    IfcDelExt (-TermName $term3 -begin 0xffff -end 0xffff );
+
+0060 添加单个广播用户:
+ 	L2BcSet (-TermName $term3 -vlan $oltCvlanId -user_vlan $oltCvlanId -egr $Data(egr));
+ 	L2BcSet (-TermName $term3 -vlan $oltCvlanId1 -user_vlan $oltCvlanId1 -egr $Data(egr));
+ 	L2BcSet (-TermName $term3 -vlan $oltCvlanId2 -user_vlan $oltCvlanId2 -egr $Data(egr));
+ 	L2BcSet (-TermName $term3 -vlan $oltCvlanId3 -user_vlan $oltCvlanId3 -egr $Data(egr));
+ 	L2BcSet (-TermName $term3 -vlan $oltCvlanId4 -user_vlan $oltCvlanId4 -egr $Data(egr));
+ 	L2BcSet (-TermName $term3 -vlan $oltCvlanId5 -user_vlan $oltCvlanId5 -egr $Data(egr));
+ 	L2BcSet (-TermName $term3 -vlan $oltCvlanId6 -user_vlan $oltCvlanId6 -egr $Data(egr));
+ 	L2BcSet (-TermName $term3 -vlan $oltCvlanId7 -user_vlan $oltCvlanId7 -egr $Data(egr));
+
+0070. 配置预调度所挂队列-仅使用sdk命令行挂调度结构，调度模式和权重直接写表项实现:
+     func_qos_presch_create(-TermName $term3 -id 0);
+     func_qos_presch_create(-TermName $term3 -id 1);
+     
+0080 配置预调度队列入队映射表,即配置qmap表:
+    GponMapSfcSet(-TermName $term3 -sfc_id 0 -pre_sch_en 1 -valid 1 -pre_sch 0);
+    GponMapSfcSet(-TermName $term3 -sfc_id 1 -pre_sch_en 1 -valid 1 -pre_sch 0);
+    GponMapSfcSet(-TermName $term3 -sfc_id 2 -pre_sch_en 1 -valid 1 -pre_sch 0);
+    GponMapSfcSet(-TermName $term3 -sfc_id 3 -pre_sch_en 1 -valid 1 -pre_sch 0);
+    GponMapSfcSet(-TermName $term3 -sfc_id 4 -pre_sch_en 1 -valid 1 -pre_sch 0);
+    GponMapSfcSet(-TermName $term3 -sfc_id 5 -pre_sch_en 1 -valid 1 -pre_sch 1);
+    GponMapSfcSet(-TermName $term3 -sfc_id 6 -pre_sch_en 1 -valid 1 -pre_sch 1);
+    GponMapSfcSet(-TermName $term3 -sfc_id 7 -pre_sch_en 1 -valid 1 -pre_sch 1);  
+    
+0130 配置队列adj:   
+    QosQsctTableSet (-TermName $term3 -index $pre_qid0  -qshp_adj $Data(adj));
+    QosQsctTableSet (-TermName $term3 -index [expr $pre_qid0 + 1] -qshp_adj $Data(adj));
+    QosQsctTableSet (-TermName $term3 -index [expr $pre_qid0 + 2] -qshp_adj $Data(adj)); 
+    QosQsctTableSet (-TermName $term3 -index [expr $pre_qid0 + 3] -qshp_adj $Data(adj));
+    QosQsctTableSet (-TermName $term3 -index [expr $pre_qid0 + 4] -qshp_adj $Data(adj));
+    QosQsctTableSet (-TermName $term3 -index [expr $pre_qid0 + 5] -qshp_adj $Data(adj));
+    QosQsctTableSet (-TermName $term3 -index [expr $pre_qid0 + 6] -qshp_adj $Data(adj));
+    QosQsctTableSet (-TermName $term3 -index [expr $pre_qid0 + 7] -qshp_adj $Data(adj));
+    QosQsctTableSet (-TermName $term3 -index [expr $pre_qid0 + 8] -qshp_adj $Data(adj));
+    QosQsctTableSet (-TermName $term3 -index [expr $pre_qid0 + 9] -qshp_adj $Data(adj));
+    QosQsctTableSet (-TermName $term3 -index [expr $pre_qid0 + 10] -qshp_adj $Data(adj));
+    QosQsctTableSet (-TermName $term3 -index [expr $pre_qid0 + 11] -qshp_adj $Data(adj));
+    QosQsctTableSet (-TermName $term3 -index [expr $pre_qid0 + 12] -qshp_adj $Data(adj));
+    QosQsctTableSet (-TermName $term3 -index [expr $pre_qid0 + 13] -qshp_adj $Data(adj));
+    QosQsctTableSet (-TermName $term3 -index [expr $pre_qid0 + 14] -qshp_adj $Data(adj));
+    QosQsctTableSet (-TermName $term3 -index [expr $pre_qid0 + 15] -qshp_adj $Data(adj));
+                  
+
+0090 修改队列间的调度关系:
+ 	QosGssaTableSet (-TermName $term3 -index $geneschestruc(secdqueue0) -schrule_sel 1 \
+ 	                 -input0_gnum 7  -input1_gnum 7  -input2_gnum 7  -input3_gnum 7 -input4_gnum 7 \
+ 	                 -input5_gnum 7  -input6_gnum 7  -input7_gnum 7  -input8_gnum 7 \
+ 	                 -input9_gnum 7  -input10_gnum 7 -input11_gnum 7 -input12_gnum 7 \
+ 	                 -input13_gnum 7 -input14_gnum 7 -input15_gnum 7 );
+ 	QosGssaTableSet (-TermName $term3 -index $geneschestruc(secdqueue1) -schrule_sel 0 \
+ 	                 -input0_gnum 7  -input1_gnum 7  -input2_gnum 7  -input3_gnum 7 -input4_gnum 7 \
+ 	                 -input5_gnum 7  -input6_gnum 7  -input7_gnum 7  -input8_gnum 7 \
+ 	                 -input9_gnum 7  -input10_gnum 7 -input11_gnum 7 -input12_gnum 7 \
+ 	                 -input13_gnum 7 -input14_gnum 7 -input15_gnum 7 );
+	
+0100 配置调度模式为WRR的权重:
+    QosStsQueueTableSet (-TermName $term3 -index $pre_qid0 -pir_wgt 1 -schrule_sel 1 );
+    QosStsQueueTableSet (-TermName $term3 -index [expr $pre_qid0 + 1] -pir_wgt 2 -schrule_sel 1 );
+    QosStsQueueTableSet (-TermName $term3 -index [expr $pre_qid0 + 2] -pir_wgt 3 -schrule_sel 1 );
+    QosStsQueueTableSet (-TermName $term3 -index [expr $pre_qid0 + 3] -pir_wgt 2 -schrule_sel 1 );
+    QosStsQueueTableSet (-TermName $term3 -index [expr $pre_qid0 + 4] -pir_wgt 2 -schrule_sel 1 );
+    QosStsQueueTableSet (-TermName $term3 -index [expr $pre_qid0 + 13] -pir_wgt 2 -schrule_sel 0 );
+    QosStsQueueTableSet (-TermName $term3 -index [expr $pre_qid0 + 14] -pir_wgt 2 -schrule_sel 0 );
+    QosStsQueueTableSet (-TermName $term3 -index [expr $pre_qid0 + 15] -pir_wgt 3 -schrule_sel 0 );
+
+
+0110 修改队列间的调度关系:
+ 	QosGssaTableSet (-TermName $term3 -index $tcont0_port_num -schrule_sel 0 \
+ 	                 -input0_gnum 7  -input1_gnum 7  -input2_gnum 7  -input3_gnum 7 -input4_gnum 7 \
+ 	                 -input5_gnum 7  -input6_gnum 7  -input7_gnum 7  -input8_gnum 7 \
+ 	                 -input9_gnum 7  -input10_gnum 7 -input11_gnum 7 -input12_gnum 7 \
+ 	                 -input13_gnum 7 -input14_gnum 7 -input15_gnum 7 );
+ 	                 
+
+0120 配置调度模式为WRR的权重:
+    QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont0Queues 0] -pir_wgt 1 -schrule_sel 0 );
+    QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont1Queues 1] -pir_wgt 1 -schrule_sel 0 );
+    QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont2Queues 2] -pir_wgt 1 -schrule_sel 0 );
+    QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont3Queues 3] -pir_wgt 1 -schrule_sel 0 );
+    QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont4Queues 4] -pir_wgt 1 -schrule_sel 0 );
+    QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont5Queues 5] -pir_wgt 1 -schrule_sel 0 );
+    QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont6Queues 6] -pir_wgt 1 -schrule_sel 0 );
+    QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont7Queues 7] -pir_wgt 1 -schrule_sel 0 );
+    
+0130 使能配置通用调度器0的shaper为400M:
+    QosShtTableSet (-TermName $term3 -index 1 -xir $Data(rate0) -xbs 15625);
+    QosSsctTableSet (-TermName $term3 -index $geneschestruc(secdqueue0) -pir_shp_mnum 1 -sshp_mode 0);
+   
+
+0140 使能通用调度器1的shaper为200M: 
+     QosShtTableSet (-TermName $term3 -index 2 -xir $Data(rate1) -xbs 15625);
+     QosSsctTableSet (-TermName $term3 -index $geneschestruc(secdqueue1) -pir_shp_mnum 2 -sshp_mode 0);
+    
+
+0150 往测试队列发送报文:
+    QosCheckNoFullStremMixData ( \
+                        -TermName $term3 -TsuID $tsuID -StreamSum $streamSum -Speed $Data(speedPercent)  \
+	                    -SendPort $sendPort -StaPort $staPort -StatMode $statMode \
+	                    -Vlan "$Data(vlan0) $Data(vlan1) $Data(vlan2) $Data(vlan3) $Data(vlan4) $Data(vlan5) $Data(vlan6) $Data(vlan7) " \
+	                    -Pri $port5_vlanPri -SMac $port5_sourceMAC -DMac $port5_destinationMAC \
+                        -SampleTimes $sampleTimes -PktLenList $pktLenList \
+                        -SaveCfgFile $saveCfgtoFile -StaItem $statItem \
+                        -StatIteStopStream $statIteStopStream \
+                        -AllowError $allowErrorQOSbps \
+                        -ForwardMix $Data(forwardMix0) \
+                        -AllowErrorFittery $allowErrorFittery \
+                        );
+
+
+ 	                 
+资源释放：
+
+资源释放：
+
+010 延迟一段时间:
+    IasCommonDelay( -Time $waitTime);
+
+110 恢复TCONT绑定模板:
+	IasOntLineProfileAdd (-TermName $term1  -OntLineProfileType gpon  -ProfileId $ontLineProfileId);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId1  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId2  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId3  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId4  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId5  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId6  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId7  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId0  -DbaProfileId $dbaProfileId);
+
+0050 删除单个广播用户:
+ 	L2BcAllDel (-TermName $term3 -vlan $oltCvlanId );
+ 	L2BcAllDel (-TermName $term3 -vlan $oltCvlanId1 );
+ 	L2BcAllDel (-TermName $term3 -vlan $oltCvlanId2 );
+ 	L2BcAllDel (-TermName $term3 -vlan $oltCvlanId3 );
+ 	L2BcAllDel (-TermName $term3 -vlan $oltCvlanId4 );
+ 	L2BcAllDel (-TermName $term3 -vlan $oltCvlanId5 );
+ 	L2BcAllDel (-TermName $term3 -vlan $oltCvlanId6 );
+ 	L2BcAllDel (-TermName $term3 -vlan $oltCvlanId7 );
+
+
+
+    
+0060 恢复队列间的调度关系:
+ 	QosGssaTableSet (-TermName $term3 -index $geneschestruc(secdqueue0) -schrule_sel 0 -input0_gnum 7 \
+ 	-input1_gnum 6 -input2_gnum 5 -input3_gnum 4 -input4_gnum 3 -input5_gnum 2 -input6_gnum 1 -input7_gnum 0);
+ 	QosGssaTableSet (-TermName $term3 -index $geneschestruc(secdqueue1) -schrule_sel 0 -input0_gnum 7 \
+ 	-input1_gnum 6 -input2_gnum 5 -input3_gnum 4 -input4_gnum 3 -input5_gnum 2 -input6_gnum 1 -input7_gnum 0);
+ 	QosGssaTableSet (-TermName $term3 -index $tcont0_port_num -schrule_sel 0 -input0_gnum 7 \
+ 	-input1_gnum 6 -input2_gnum 5 -input3_gnum 4 -input4_gnum 3 -input5_gnum 2 -input6_gnum 1 -input7_gnum 0);
+
+0070 恢复调度模式为WRR:
+    QosStsQueueTableSet (-TermName $term3 -index $pre_qid0 -pir_wgt 0 -schrule_sel 0;
+    QosStsQueueTableSet (-TermName $term3 -index [expr $pre_qid0 + 1] -pir_wgt 0 -schrule_sel 0);
+    QosStsQueueTableSet (-TermName $term3 -index [expr $pre_qid0 + 2] -pir_wgt 0 -schrule_sel 0);
+    QosStsQueueTableSet (-TermName $term3 -index [expr $pre_qid0 + 3] -pir_wgt 0 -schrule_sel 0);
+    QosStsQueueTableSet (-TermName $term3 -index [expr $pre_qid0 + 4] -pir_wgt 0 -schrule_sel 0);
+    QosStsQueueTableSet (-TermName $term3 -index [expr $pre_qid0 + 5] -pir_wgt 0 -schrule_sel 0);
+    QosStsQueueTableSet (-TermName $term3 -index [expr $pre_qid0 + 6] -pir_wgt 0 -schrule_sel 0);
+    QosStsQueueTableSet (-TermName $term3 -index [expr $pre_qid0 + 7] -pir_wgt 0 -schrule_sel 0);
+
+    QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont0Queues 0] -pir_wgt 0 -schrule_sel 0 );
+    QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont0Queues 1] -pir_wgt 0 -schrule_sel 0 );
+    QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont0Queues 2] -pir_wgt 0 -schrule_sel 0 );
+    QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont0Queues 3] -pir_wgt 0 -schrule_sel 0 );
+    QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont0Queues 4] -pir_wgt 0 -schrule_sel 0 );
+    QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont0Queues 5] -pir_wgt 0 -schrule_sel 0 );
+    QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont0Queues 6] -pir_wgt 0 -schrule_sel 0 );
+    QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont0Queues 7] -pir_wgt 0 -schrule_sel 0 );
+    
+0080 删除预调度的调度器shaper:
+    QosSsctTableSet (-TermName $term3 -index $geneschestruc(secdqueue0) -pir_shp_mnum 0 -sshp_mode 0);
+    QosSsctTableSet (-TermName $term3 -index $geneschestruc(secdqueue1) -pir_shp_mnum 0 -sshp_mode 0);
+
+
+
+234.停流:
+    QosTsuRemoveStream (-TsuID $tsuID);
+    AsicCurCfgGet (-TermName $term3 );
+
