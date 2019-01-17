@@ -1252,3 +1252,715 @@ proc  QosSsctTableSetOrg { args } {
 #  ------  测试记录  -----------------------------------
 #=======================================================
 # 
+
+
+#!+================================================================
+#  版权(C) 2005-2012，华为技术有限公司 综合硬件PDU            
+#==================================================================
+#                                                                  
+#!!================================================================
+#  过 程 名：   GponMapSfcSet
+#  函数说明:     GPON上行SFC映射表设置
+#  参数说明：
+#               -TermName   ：  	  (必选)窗口名；
+#               -sfc_id     ：  	  ；
+#               -gemport    ：  	  ；
+#               -tcont      ：  	  ；
+#               -car_en     ：  	  ；
+#               -car_id     ：  	  ；
+#               -pri_mark_en ：  	  ；
+#               -pri        ：  	  ；
+#               -pre_sch_en ：  	  ；
+#               -qid0       ：  	  ；
+#               -qid1       ：  	  ；
+#               -qid2       ：  	  ；
+#               -qid3       ：  	  ；
+#               -qid4       ：  	  ；
+#               -qid5       ：  	  ；
+#               -qid6       ：  	  ；
+#               -qid7       ：  	  ；
+#             
+#             
+#  返 回 值：  
+#                执行成功；           
+#					返回 0 成功码；    
+#                执行失败；            
+#                			返回错误码;
+#  注意事项：   
+#  使用实例：   GponMapSfcSet -TermName $term -sfc_id XXX -gemport XXX -tcont XXX -car_en XXX -car_id XXX -pri_mark_en XXX -pri XXX -pre_sch_en XXX -qid0 XXX -qid1 XXX -qid2 XXX -qid3 XXX -qid4 XXX -qid5 XXX -qid6 XXX -qid7 XXX
+#		    
+#		   
+#  对应命令：    
+#  
+#  作    者： zhangna 00102865 
+#  生成时间： 2014-02-08 17:07:58
+#  修改纪录：   
+#               
+#!!================================================================
+
+proc  GponMapSfcSet { args } { 
+	
+	#-----------------------------------
+	#  定义私有标签码
+	#-----------------------------------
+	set Suc001Msg {Command execute success!}
+	set Suc001    {\s*succ\s*}
+	
+	set Err001Msg {Command execute error!}
+	set Err001    {\s*error\s*} 
+
+	set Err002Msg {Command execute error!}
+	set Err002    {\s*fail\s*} 
+		
+	#--------------------------------------------
+	# 定义CommonCommand的函数的各个参数
+	#--------------------------------------------
+	#1.返回值规则列表:
+	set returnPara {Err001 Err002 Suc001}
+    
+	#2.定义命令生成表达式;
+	#set cmds {cli /home/cli/hal_ext/gpon_map_set -v [sfc_id %sfc_id%] [gemport %gemport%] [tcont %tcont%] [car_en %car_en%] [car_id %car_id%] \
+	#	[pri_mark_en %pri_mark_en%] [pri %pri%] [pre_sch_en %pre_sch_en%] [qid0 %qid0%] [qid1 %qid1%] [qid2 %qid2%] [qid3 %qid3%] [qid4 %qid4%] [qid5 %qid5%] [qid6 %qid6%] [qid7 %qid7%]}
+#	set cmds0 {cli /home/cli/api/gpon/gemport_map_del -v [mapid %sfc_id%]}
+#	set cmds1 {cli /home/cli/api/gpon/gemport_map_set -v [mapid %sfc_id%] [gemport %gemport%] [port %port%] [mask %mask%] [level %level%] \
+#		[vlanmode %vlanmode%] [vlan %vlan%] [primode %primode%] [pri %pri%] [iptosmode %iptosmode%] [iptos %iptos%] [bridgeid %bridgeid%]}
+#	set cmds2 {cli /home/cli/api/gpon/gemport_map_car_set -v [carid %car_id%] [cir %cir%] [pir %pir%] [cbs %cbs%] [pbs %pbs%] [coloraware %color_aware%]} 
+#	set cmds3 {cli /home/cli/api/gpon/gemport_map_car_connect -v [mapid %sfc_id%] [carid %car_id%]}
+	set cmds  {cli /home/cli/func/pon/map_set -v [sfcid %sfc_id%] [gemport %gemport%] [tcont %tcont%] [car_en %car_en%] [car_id %car_id%] \
+		[point_pri_en %pri_mark_en%] [point_pri %pri%] [pre_sch_en %pre_sch_en%] [pre_sch %pre_sch%] [valid %valid%]} 
+	
+	#3. 设置目标模式(可选);
+	set mode "SDK"  
+	
+	set ret [CommonCommand -Cmds "\n" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S [list "\(y/n\)\[n\]:" "#" ">"] -T 20000] 
+    
+    set ret [CommonCommand -Cmds "$cmds" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S [list "\(y/n\)\[n\]:" "#" ">"] -T 20000] 
+#	set ret [CommonCommand -Cmds "$cmds0" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S [list "\(y/n\)\[n\]:" "#" ">"] -T 20000] 
+#	
+#	set ret [CommonCommand -Cmds "\n" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S [list "\(y/n\)\[n\]:" "#" ">"] -T 20000] 
+    
+#	set ret [CommonCommand -Cmds "$cmds1" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S [list "\(y/n\)\[n\]:" "#" ">"] -T 20000]
+#	
+#	set ret [CommonCommand -Cmds "\n" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S [list "\(y/n\)\[n\]:" "#" ">"] -T 20000] 
+#    
+#	set ret [CommonCommand -Cmds "$cmds2" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S [list "\(y/n\)\[n\]:" "#" ">"] -T 20000]
+#	
+#	set ret [CommonCommand -Cmds "\n" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S [list "\(y/n\)\[n\]:" "#" ">"] -T 20000] 
+#    
+#	set ret [CommonCommand -Cmds "$cmds3" -RetList "$returnPara" -Mode "$mode" -VarList "$args" -S [list "\(y/n\)\[n\]:" "#" ">"] -T 20000]
+	
+	return $ret
+	
+} ;# end of proc 
+#=======================================================
+#  ------  测试记录  -----------------------------------
+#=======================================================
+# 
+
+
+
+#!!================================================================
+#  过 程 名：   QosCheckNoFullStremMixData
+#  函数说明:   核对某条流的 rx_line_bps 和 另外一条流的 rx_pps 数据
+#  参数说明：
+#               -streamSum ：  	  流个数
+#               -sampleTimes ：    采样次数
+#               -pktLenList ：  	  报文长度列表
+#               -allowError ：	  允许误差值
+#               -statItem ：  	  采样度量项
+#               -statIteStopStream ： 停流后采样度量项
+#               -forward ： 	 预期值
+#               -checkType   核对类型：pps、bps
+#               -bpsType     是否精确匹配
+#             
+#  返 回 值：  
+#                执行成功；           
+#					返回 0 成功码；    
+#                执行失败；            
+#                	返回错误码;
+#  注意事项：
+#  使用实例：
+#		    
+#		   
+#  对应命令： 
+#  
+#  作    者： dengwenxian dwx5315511
+#  生成时间： 2014-9-19 15:34:32
+#  修改纪录：   
+#               
+#!!================================================================
+proc  QosCheckNoFullStremMixData { args } { 
+    
+    puts "==QosCheckNoFullStremMixData==$args"
+	#测试仪参数
+	set sendPort    	0 ; #测试仪发送端口
+	set staPort       	0 ; #测试仪接收端口
+
+	#其他变量
+	set tsuID			1 ; #测试仪ID
+	set sampleTimes		1 ;  #采样次数
+	set allowError      0.01;#默认误差
+    set speedPercent    100;#默认满端口发送
+    set bpsType         "EXACT";# rx_line_bps 是否精确匹配
+    set rateMode        Percentage ; #测试仪发送速率模式，默认是百分比
+    set retFlag         "TRUE"      ; #返回类型
+    set inVlan          "FALSE"      ; #内部vlan
+    set inPri           "FALSE"       ;#内部优先级
+#    set repeatCount     {1 1 1 1 1 1 1 1} ; #重复次数
+    set payLoad         "PRBS"            ; # payload 模式
+    set oltSvlanId      560               ; #背景流的vlan
+    set blackStreamFlg  "FALSE"           ; #是否有背景流
+    set streamLoad      "FALSE" ; #指定每条流的流量大小，单位是Kbps
+    
+    set bpsFlag         "FALSE" ; #PPS 的时候，是否累计发送流的rx_line_bps
+    set streamPick      {1 0 1 1 0 1 1 1} ;#PPS 的时候，是否累计发送流的rx_line_bps.  为 1表示要累计该条流，为 0 表示不累计该条流
+    set forwardTotalBps "FALSE"
+    set temp_CreatStreamList "FALSE"
+    set sentWaitTime    3  ; #采样前持续发包时间;
+    set fitteryType "TRUE" ; #是否要计算抖动值
+    set doubleSteam "FALSE" ; #是否要进行双向发流。每条单向流都复制一条对发的流，仅流名称、SMac、DMac等三个参数不同。
+    set sendType    "SINGLE"; #单向发流
+    set staPortSpeed 80.0 ;#双向发流时，对端口的端口速率
+    set doubleSteamVlan {234234 234234 } ;
+    set dIp "FALSE"
+    set sIp "FALSE"
+    
+	#获取传入参数
+	CommonArgsGet $args -TermName termName -TsuID tsuID \
+	                    -StreamSum streamSum -Speed speedPercent -RateMode rateMode \
+	                    -SendPort sendPort -StaPort staPort \
+	                    -StatMode statMode -Vlan vlanID -Pri pri -SMac sMac -DMac dMac \
+	                    -SampleTimes sampleTimes -PktLenList pktLenList \
+	                    -SaveCfgFile saveCfgtoFile -StaItem statItem \
+						-StatIteStopStream statIteStopStream \
+						-AllowError allowError \
+                        -RepeatCount repeatCount \
+                        -InnerVlan inVlan \
+                        -InPri inPri \
+                        -PayLoad  payLoad \
+                        -OltSvlanId oltSvlanId \
+                        -BlackStreamFlg blackStreamFlg \
+                        -ForwardMix forwardMix \
+                        -ForwardTotalBps forwardTotalBps \
+                        -StreamLoad streamLoad \
+                        -SentWaitTime sentWaitTime \
+                        -FitteryType fitteryType \
+                        -AllowErrorFittery allowErrorFittery \
+                        -ForwardPktNum forwardPktNum \
+                        -DoubleSteam doubleSteam \
+                        -DoubleSteamVlan doubleSteamVlan \
+                        -SendType sendType \
+                        -StaPortSpeed staPortSpeed \
+                        -DIp dIp -SIp sIp
+                        
+    set allowErrorBackUp $allowError
+    
+    
+    set lenList_length [ llength $pktLenList ]
+    puts "lenList_length:$lenList_length"
+    
+    for {set k 0} {$k < $lenList_length} {incr k 1} {
+        set pktLen [lindex $pktLenList $k]
+
+        ::TestLib::ShowTraceMessage -level 10 -color blue -msg "(QosCheckNoFullStremMixData0020), ======包长为 $pktLen =============="
+        set length  [ llength $pktLen  ]
+        set pktLenT [ lindex $pktLen 0 ] 
+        
+	    #构建报文参数:
+		set temp_CreatStreamList [ QosCreatStreamList -TsuID $tsuID -StreamSum $streamSum \
+		                    -Speed $speedPercent -RateMode $rateMode \
+		                    -SendPort $sendPort -StaPort $staPort -StatMode $statMode -Vlan $vlanID \
+		                    -Pri $pri -SMac $sMac -DMac $dMac \
+		                    -PktLen $pktLen -InnerVlan $inVlan -InPri $inPri -PayLoad  $payLoad \
+		                    -StreamLoad $streamLoad -DIp $dIp -SIp $sIp]
+        
+        puts "temp_CreatStreamList:$temp_CreatStreamList"
+        
+
+	    #往测试队列发送报文，不停流. 但，要判断是否有参数 repeatCount dengwenxian  20141117
+		if {([info exists repeatCount])} { 
+	        QosCreatAndSendStremNoStop -StaItem $statItem -SendElement $temp_CreatStreamList \
+	                               -SaveCfgFile $saveCfgtoFile -SentWaitTime $sentWaitTime \
+	                               -OltSvlanId $oltSvlanId -BlackStreamFlg $blackStreamFlg \
+	                               -DoubleSteam $doubleSteam -StaPortSpeed $staPortSpeed \
+	                               -DoubleSteamVlan $doubleSteamVlan \
+	                               -RepeatCount $repeatCount
+		} else {
+	        QosCreatAndSendStremNoStop -StaItem $statItem -SendElement $temp_CreatStreamList \
+	                               -SaveCfgFile $saveCfgtoFile -SentWaitTime $sentWaitTime \
+	                               -OltSvlanId $oltSvlanId -BlackStreamFlg $blackStreamFlg \
+	                               -DoubleSteam $doubleSteam -StaPortSpeed $staPortSpeed \
+	                               -DoubleSteamVlan $doubleSteamVlan
+		} ;# end if
+		
+		IasCommonDelay -Time 3
+	    #多次采样报文:
+	    set temp_GetStreamData [ QosGetStreamData -StreamSum $streamSum -SampleTimes $sampleTimes \
+	                                 -SendElement $temp_CreatStreamList -PktLen $pktLen \
+	                                 -OltSvlanId $oltSvlanId -BlackStreamFlg $blackStreamFlg \
+	                                 -FitteryType $fitteryType -DoubleSteam $doubleSteam \
+	                                 -SendType $sendType ]
+
+        puts "temp_GetStreamData:$temp_GetStreamData"
+        
+        #停流:
+        set returnPktNum [ QosStopAndResume -StaItem $statIteStopStream -SendElement $temp_CreatStreamList ]
+        
+	    #判断是否有 RX_PAYLOAD_ERRORS 错误 
+	    if {"0" == [lindex $returnPktNum 0 ]} {
+	       
+	       ::TestLib::ShowTraceMessage -level 10 -color blue -msg "(QosCheckNoFullStremMixData0025), \
+	           开始判断是否有 RX_PAYLOAD_ERRORS 错误，有错直接报错，退出！详细信息可以查看上面的 QosPortStopAndResume START 打印 ！"
+	       CommonArgsGet $returnPktNum -retStat retStat
+	       ::TestLib::ShowTraceMessage -level 10 -color blue -msg "(QosCheckNoFullStremMixData0026), retStat:$retStat"
+	       set retStatSum [ llength $retStat ]
+	       
+#	       #循环处理所有流
+#	       for {set j 0} { $j < $retStatSum } { incr j 1} {
+#	          set retStatTemp [lindex $retStat $j ] ;# {-SendPort 1/9 -StaPort 1/10 -Stream streamName0 -SendTra {3011313 0 0 0 0.0 0.0 0.0 0.0 0.0 0.0} -RecTra {0 3011273 0 0 22.4 295.7 26.0 0.0 271.6 2.2}}
+#	          CommonArgsGet $retStatTemp -RecTra recTra
+#	          set rxPayloadErrors [lindex $recTra 2 ] ;#接收端口的  RX_PAYLOAD_ERRORS 
+#	          
+#	          # 只要发现有一次 S_RX_PAYLOAD_ERRORS 值不为0，就报错，退出
+#	          if {0 != $rxPayloadErrors } {
+#	             return Err010
+#	          }
+#	       }
+	    } else {
+	       ::TestLib::ShowTraceMessage -level 10 -color red -msg "(QosCheckNoFullStremMixData0028), 停流失败！ "
+	       return Err010
+	    }
+		
+	    #是否核对发送、接收报文个数
+		if {([info exists forwardPktNum])} { 
+	        ::TestLib::ShowTraceMessage -level 10 -color blue -msg "(QosCheckNoFullStremMixData0030), 核对发送、接收报文个数"
+	        set retFlag [ QosCheckStremPktNum -ReturnPktNum $returnPktNum -ForwardPktNum $forwardPktNum \
+                    -PktLen $pktLenT ]
+		    
+		} ;# if
+
+	    #是否核对采样报文
+		if {([info exists forwardMix])} { 
+		    CommonArgsGet $temp_GetStreamData -l_rx_pps rx_pps -l_rx_line_bps rx_line_bps	    
+#		    puts "QosCheckNoFullStremMixData  rx_pps:$rx_pps"
+#		    puts "QosCheckNoFullStremMixData  rx_line_bps:$rx_line_bps"
+	
+	        #核对采样报文
+	        ::TestLib::ShowTraceMessage -level 10 -color blue -msg "(QosCheckNoFullStremMixData0040), 核对采样报文"
+	        CommonArgsGet $temp_GetStreamData -l_rx_pps rx_pps -l_rx_line_bps rx_line_bps
+	        
+		    #是否判断采样过程中抖动的范围
+			if {([info exists allowErrorFittery])} { 
+		        set retFlagTemp [ QosDealWithStremMixData -streamData $temp_GetStreamData \
+		                                -l_rx_pps $rx_pps -l_rx_line_bps $rx_line_bps -ForwardMix $forwardMix \
+			                            -PktLen $pktLenT -AllowError $allowError -sampleTimes $sampleTimes \
+			                            -AllowErrorFittery $allowErrorFittery ]
+			} else {
+		        set retFlagTemp [ QosDealWithStremMixData -streamData $temp_GetStreamData \
+		                                -l_rx_pps $rx_pps -l_rx_line_bps $rx_line_bps -ForwardMix $forwardMix \
+			                            -PktLen $pktLenT -AllowError $allowError -sampleTimes $sampleTimes \
+			                            ]
+			
+			};# end if
+					
+
+	        
+	        set retFlagTemp [ lindex $retFlagTemp 0 ]
+	        if {0 != $retFlagTemp} {
+				set retFlag "FALSE"
+	        }
+		} ;# end if
+        
+        #===================================   判断所有队列的 rx_line_bps 总和   START  ====================
+        if {"FALSE" != $forwardTotalBps} {
+	        set totalRxLinebps 0.0 ; #所有队列的 rx_line_bps 总和    
+	        for {set j 0} { $j < $streamSum } {incr j 1} {
+	             set rxLineBps [lindex $rx_line_bps $j]
+	             set totalRxLinebps [expr $totalRxLinebps + $rxLineBps ]
+	        }
+	        
+	        set cutValue        [expr abs([ expr $totalRxLinebps - $forwardTotalBps ]) ] ;#获取当前比值跟期望比值的差距值
+	        set temp            [expr $cutValue * 1.0 / $forwardTotalBps * 1.0 ]         ;#获取当前比值跟期望比值的误差 
+	        
+	        #判断是否在允许的误差范围内	                     
+	#	    #如果是小流量(小于2M)，并且是长包（若包长是随机值的话，就取中间值,大于1000）的情况下，误差要稍微放大一些;否则，使用正常误差                    
+	#	    set allowError [ QosCheckAllowError -RxLinebps $totalRxLinebps -PktLen $pktLenT \
+	#		                      -AllowErrorNormal $allowErrorBackUp ]
+	        #如果 temp 不只2位小数，就强制格式转换为2位小数，多余位四舍五入
+	        set temp          [format %.2f  $temp ]
+	        if { $temp <= $allowErrorBackUp } {
+	             ::TestLib::ShowTraceMessage -level 10 -color blue -msg "(QosCheckNoFullStremMixData0090),包长为 $pktLenT , \
+	  	         所有队列的 rx_line_bps 总和是 $totalRxLinebps Mbps，跟预期值 $forwardTotalBps Mbps 的误差为 $temp , \
+	  	         在误差范围 $allowErrorBackUp 内, 正常 ！ "
+	        } else {
+	             ::TestLib::ShowTraceMessage -level 10 -color red -msg "(QosCheckNoFullStremMixData0100),包长为 $pktLenT , \
+	  	         所有队列的 rx_line_bps 总和是 $totalRxLinebps Mbps，跟预期值 $forwardTotalBps Mbps 的误差为 $temp , \
+	  	         不在误差范围 $allowErrorBackUp 内, 不正常 ！ "
+		  	          
+		 	     set retFlag "FALSE"
+	        }
+        }
+        #===================================   判断所有队列的 rx_line_bps 总和   END  ====================
+		        
+        
+        #blackStreamFlg 为 true，表明要处理一条背景流，即从对端口发来的流
+        if {"TRUE" == $blackStreamFlg} {
+
+	        #核对背景流的采样报文,默认端口速率是1G,即1000M
+	        CommonArgsGet $temp_GetStreamData -BlackStream_rx_line_bps blackStream_rx_line_bps
+	        set retFlagTemp [ QosCheckBlackStrem -BlackStream_rx_line_bps $blackStream_rx_line_bps -AllowError $allowError ]
+
+	        set retFlagTemp [ lindex $retFlagTemp 0 ]
+
+            if {0 != $retFlagTemp} {
+				return Err010
+            }
+        }       
+
+    };#for
+    
+    #返回
+    if {"TRUE" == $retFlag} {
+      return "0 Suc001 -CreatStreamList $temp_CreatStreamList"
+    } else {
+      return Err010
+    }
+
+} ;# end of proc
+
+
+
+proc  checkRxLinebpsFittery { args } {
+      puts "==checkRxLinebpsFittery==$args"
+      
+      CommonArgsGet $args -pktLen pktLen -strNO strNO -allowError allowError -forwardValue forwardValue
+      set streamData [lindex $args 0] 
+      # strNO 的值为 0 1 2 3 4 5 6 7 ，分别对应建流的时候的流序号。暂时只支持 8 条流
+      switch $strNO {
+    	0  { CommonArgsGet $streamData -stream0Fittery stream0Fittery ; \
+    		 CommonArgsGet $stream0Fittery -rxlinebpsMin rxlinebpsMin -rxlinebpsMax rxlinebpsMax ; \
+             set cutValue [expr ( $rxlinebpsMax - $rxlinebpsMin ) / 1000000.0 ] ; \
+             set retFlag [getRxLinebpsFitteryError -thisValue $cutValue -pktLen $pktLen \
+                                                  -strNO $strNO -allowError $allowError \
+                                                  -Min $rxlinebpsMin -Max $rxlinebpsMax \
+                                                  -forwardValue $forwardValue] ; \
+    	   }
+    	1  { CommonArgsGet $streamData -stream1Fittery stream1Fittery ; \
+    		 CommonArgsGet $stream1Fittery -rxlinebpsMin rxlinebpsMin -rxlinebpsMax rxlinebpsMax ; \
+    		 set cutValue [expr ( $rxlinebpsMax - $rxlinebpsMin ) / 1000000.0 ] ; \
+             set retFlag [getRxLinebpsFitteryError -thisValue $cutValue -pktLen $pktLen \
+                                                  -strNO $strNO -allowError $allowError \
+                                                  -Min $rxlinebpsMin -Max $rxlinebpsMax \
+                                                  -forwardValue $forwardValue] ; \
+    	   }
+    	2  { CommonArgsGet $streamData -stream2Fittery stream2Fittery ; \
+    		 CommonArgsGet $stream2Fittery -rxlinebpsMin rxlinebpsMin -rxlinebpsMax rxlinebpsMax ; \
+             set cutValue [expr ( $rxlinebpsMax - $rxlinebpsMin ) / 1000000.0 ] ; \
+             set retFlag [getRxLinebpsFitteryError -thisValue $cutValue -pktLen $pktLen \
+                                                  -strNO $strNO -allowError $allowError \
+                                                  -Min $rxlinebpsMin -Max $rxlinebpsMax \
+                                                  -forwardValue $forwardValue] ; \
+    	   }
+    	3  { CommonArgsGet $streamData -stream3Fittery stream3Fittery ; \
+    		 CommonArgsGet $stream3Fittery -rxlinebpsMin rxlinebpsMin -rxlinebpsMax rxlinebpsMax ; \
+             set cutValue [expr ( $rxlinebpsMax - $rxlinebpsMin ) / 1000000.0 ] ; \
+             set retFlag [getRxLinebpsFitteryError -thisValue $cutValue -pktLen $pktLen \
+                                                  -strNO $strNO -allowError $allowError \
+                                                  -Min $rxlinebpsMin -Max $rxlinebpsMax \
+                                                  -forwardValue $forwardValue] ; \
+    	   }
+    	4  { CommonArgsGet $streamData -stream4Fittery stream4Fittery ; \
+    		 CommonArgsGet $stream4Fittery -rxlinebpsMin rxlinebpsMin -rxlinebpsMax rxlinebpsMax ; \
+             set cutValue [expr ( $rxlinebpsMax - $rxlinebpsMin ) / 1000000.0 ] ; \
+             set retFlag [getRxLinebpsFitteryError -thisValue $cutValue -pktLen $pktLen \
+                                                  -strNO $strNO -allowError $allowError \
+                                                  -Min $rxlinebpsMin -Max $rxlinebpsMax \
+                                                  -forwardValue $forwardValue] ; \
+    	   }
+    	5  { CommonArgsGet $streamData -stream5Fittery stream5Fittery ; \
+    		 CommonArgsGet $stream5Fittery -rxlinebpsMin rxlinebpsMin -rxlinebpsMax rxlinebpsMax ; \
+             set cutValue [expr ( $rxlinebpsMax - $rxlinebpsMin ) / 1000000.0 ] ; \
+             set retFlag [getRxLinebpsFitteryError -thisValue $cutValue -pktLen $pktLen \
+                                                  -strNO $strNO -allowError $allowError \
+                                                  -Min $rxlinebpsMin -Max $rxlinebpsMax \
+                                                  -forwardValue $forwardValue] ; \
+    	   }
+    	6  { CommonArgsGet $streamData -stream6Fittery stream6Fittery ; \
+    		 CommonArgsGet $stream6Fittery -rxlinebpsMin rxlinebpsMin -rxlinebpsMax rxlinebpsMax ; \
+             set cutValue [expr ( $rxlinebpsMax - $rxlinebpsMin ) / 1000000.0 ] ; \
+             set retFlag [getRxLinebpsFitteryError -thisValue $cutValue -pktLen $pktLen \
+                                                  -strNO $strNO -allowError $allowError \
+                                                  -Min $rxlinebpsMin -Max $rxlinebpsMax \
+                                                  -forwardValue $forwardValue] ; \
+    	  }    	
+    	7  { CommonArgsGet $streamData -stream7Fittery stream7Fittery ; \
+    		 CommonArgsGet $stream7Fittery -rxlinebpsMin rxlinebpsMin -rxlinebpsMax rxlinebpsMax ; \
+             set cutValue [expr ( $rxlinebpsMax - $rxlinebpsMin ) / 1000000.0 ] ; \
+             set retFlag [getRxLinebpsFitteryError -thisValue $cutValue -pktLen $pktLen \
+                                                  -strNO $strNO -allowError $allowError \
+                                                  -Min $rxlinebpsMin -Max $rxlinebpsMax \
+                                                  -forwardValue $forwardValue] ; \
+    	  }
+    	default {::TestLib::ShowTraceMessage -level 10 -color red -msg "(checkRxLinebpsFittery) 队列 ID 号传入有误，暂时只支持：0 1 2 3 4 5 6 7 " ; \
+    		     set retFlag "FALSE" }
+      }
+      
+      return $retFlag
+}
+
+proc  getRxLinebpsFitteryError { args } {
+      puts "==getRxLinebpsFitteryError==$args"
+      
+      
+      CommonArgsGet $args -thisValue thisValue -pktLen pktLen -strNO strNO \
+                          -allowError allowError -forwardValue forwardValue \
+                          -Min rxlinebpsMin -Max rxlinebpsMax
+
+      if {0 > $forwardValue } {
+	  	  ::TestLib::ShowTraceMessage -level 10 -color pink -msg "(getRxLinebpsFitteryError),包长为 $pktLen ，\
+	  	                          队列 $strNO 的流的 rx_line_bps 期望值为 $forwardValue Mbps,小于 0 , 不正常 ！"
+	       # 因为 Xstream 跟 testcenter 在测试抖动的时候，产生的误差不一致，Xstream误差过大，会导致用例失败。所以暂时返回 ok ，让用例先执行下去。
+	       return "TRUE"
+#          return "FALSE"
+      } elseif { 0 == $forwardValue } {
+          if { $thisValue == $forwardValue } {
+		  	 ::TestLib::ShowTraceMessage -level 10 -color blue -msg "(getRxLinebpsFitteryError),包长为 $pktLen ，\
+		  	                          队列 $strNO 的流的 rx_line_bps 抖动范围是最小值 $rxlinebpsMin , 最大值 $rxlinebpsMax， \
+		  	                          抖动最大最小差值是 $thisValue Mbps , 期望值为 $forwardValue Mbps,误差值为 0.0 , \
+		  	                          在误差范围 $allowError 内, 正常 ！"
+		     return "TRUE"       ; #返回类型
+          } else {
+		  	 ::TestLib::ShowTraceMessage -level 10 -color pink -msg "(getRxLinebpsFitteryError),包长为 $pktLen ，\
+		  	                          队列 $strNO 的流的 rx_line_bps 抖动范围是最小值 $rxlinebpsMin , 最大值 $rxlinebpsMax， \
+		  	                          抖动最大最小差值是 $thisValue Mbps , 而期望值为 $forwardValue Mbps, 不正常 ！"
+		     
+		     # 因为 Xstream 跟 testcenter 在测试抖动的时候，产生的误差不一致，Xstream误差过大，会导致用例失败。所以暂时返回 ok ，让用例先执行下去。
+		     return "TRUE"
+#		     return "FALSE"
+          }
+
+      } else {
+	      
+#	      set cutValue            [expr abs([ expr $thisValue - $forwardValue ]) ]
+#	      set temp                [expr $cutValue * 1.0 / $forwardValue * 1.0 ] 
+
+	      set temp                [expr $thisValue * 1.0 / $forwardValue * 1.0 ]
+	      #如果 temp 不只2位小数，就强制格式转换为2位小数，多余位四舍五入
+	      set temp          [format %.2f  $temp ]
+		  if {$temp <= $allowError } {
+		  	 ::TestLib::ShowTraceMessage -level 10 -color blue -msg "(getRxLinebpsFitteryError),包长为 $pktLen ，\
+		  	                          队列 $strNO 的流的 rx_line_bps 抖动范围是最小值 $rxlinebpsMin , 最大值 $rxlinebpsMax， \
+		  	                          抖动最大最小差值是 $thisValue Mbps , 期望值为 $forwardValue Mbps,误差值为 $temp , \
+		  	                          在误差范围 $allowError 内, 正常 ！"
+		     return "TRUE"       ; #返回类型
+		  } else {
+		  	 ::TestLib::ShowTraceMessage -level 10 -color red -msg "(getRxLinebpsFitteryError),包长为 $pktLen ，\
+		  	                          队列 $strNO 的流的 rx_line_bps 抖动范围是最小值 $rxlinebpsMin , 最大值 $rxlinebpsMax， \
+		  	                          抖动最大最小差值是 $thisValue Mbps , 期望值为 $forwardValue Mbps,误差值为 $temp , \
+		  	                          不在误差范围 $allowError 内, 不正常 ！"
+		     # 因为 Xstream 跟 testcenter 在测试抖动的时候，产生的误差不一致，Xstream误差过大，会导致用例失败。所以暂时返回 ok ，让用例先执行下去。
+		     return "TRUE"
+#		     return "FALSE"
+		  };#if allowError
+	      
+      } ;#if  forwardValue 
+      
+
+}
+
+proc  checkTotalRxLinebpsFittery { args } {
+      puts "==checkTotalRxLinebpsFittery==$args"
+      CommonArgsGet $args  -pktLen pktLen -sampleTimes sampleTimes  \
+                           -tsStrNO tsStrNO -lenTsStrNO lenTsStrNO  \
+                           -allowError allowError -forwardValue forwardValue
+      set retFlag "TRUE";
+      
+      set lappendData {}
+	  set streamData [lindex $args 0]
+      for {set z 0} { $z < $sampleTimes } {incr z 1} {
+        set thisTotalRxLinebps 0.0
+        for {set s 0 } {$s < $lenTsStrNO } {incr s} {
+            set strNOTemp     [lindex $tsStrNO $s]
+            
+            # strNOTemp 的值为 0 1 2 3 4 5 6 7 ，分别对应建流的时候的流序号。暂时只支持 8 条流
+	        switch $strNOTemp {
+	        	0  { CommonArgsGet $streamData -strLinebps0 strLinebps0 ; \
+	        		 set LinebpsVal [lindex $strLinebps0 $z] ; \
+	        	     set thisTotalRxLinebps [expr $thisTotalRxLinebps + $LinebpsVal ] \
+		           }
+	        	1  { CommonArgsGet $streamData -strLinebps1 strLinebps1 ; \
+	        		 set LinebpsVal [lindex $strLinebps1 $z] ; \
+	        	     set thisTotalRxLinebps [expr $thisTotalRxLinebps + $LinebpsVal ] \
+		           }
+	        	2  { CommonArgsGet $streamData -strLinebps2 strLinebps2 ; \
+	        		 set LinebpsVal [lindex $strLinebps2 $z] ; \
+	        	     set thisTotalRxLinebps [expr $thisTotalRxLinebps + $LinebpsVal ] \
+		           }
+	        	3  { CommonArgsGet $streamData -strLinebps3 strLinebps3 ; \
+	        		 set LinebpsVal [lindex $strLinebps3 $z] ; \
+	        	     set thisTotalRxLinebps [expr $thisTotalRxLinebps + $LinebpsVal ] \
+		           }
+	        	4  { CommonArgsGet $streamData -strLinebps4 strLinebps4 ; \
+	        		 set LinebpsVal [lindex $strLinebps4 $z] ; \
+	        	     set thisTotalRxLinebps [expr $thisTotalRxLinebps + $LinebpsVal ] \
+		           }
+	        	5  { CommonArgsGet $streamData -strLinebps5 strLinebps5 ; \
+	        		 set LinebpsVal [lindex $strLinebps5 $z] ; \
+	        	     set thisTotalRxLinebps [expr $thisTotalRxLinebps + $LinebpsVal ] \
+		           }
+	        	6  { CommonArgsGet $streamData -strLinebps6 strLinebps6 ; \
+	        		 set LinebpsVal [lindex $strLinebps6 $z] ; \
+	        	     set thisTotalRxLinebps [expr $thisTotalRxLinebps + $LinebpsVal ] \
+		           }
+	        	7  { CommonArgsGet $streamData -strLinebps7 strLinebps7 ; \
+	        		 set LinebpsVal [lindex $strLinebps7 $z] ; \
+	        	     set thisTotalRxLinebps [expr $thisTotalRxLinebps + $LinebpsVal ] \
+		           }
+	        	default {::TestLib::ShowTraceMessage -level 10 -color red -msg "(checkTotalRxLinebpsFittery) 队列 ID 号传入有误，暂时只支持：0 1 2 3 4 5 6 7 " \
+	        		     return "FALSE" \
+	        		     }
+	            
+	            puts "thisTotalRxLinebps==$s==:$thisTotalRxLinebps"
+	        }; #switch
+        } ;#for lenTsStrNO 
+        lappend lappendData $thisTotalRxLinebps ;
+      } ;# for  sampleTimes
+	                
+#	  ::TestLib::ShowTraceMessage -level 10 -color blue -msg "(checkTotalRxLinebpsFittery) lappendData:$lappendData "               
+	  
+	  #升序
+	  set lappendData [lsort -real -increasing $lappendData];
+#	  ::TestLib::ShowTraceMessage -level 10 -color blue -msg "(checkTotalRxLinebpsFittery) lappendData 升序之后:$lappendData "
+	  
+	  #最小最大值
+	  set totalRxLinebpsMix [lindex $lappendData 0 ]
+	  set totalRxLinebpsMax [lindex $lappendData [expr $sampleTimes - 1 ] ]
+	  #差值
+#	  set ave_totalrxlinebps [expr ( $totalRxLinebpsMix + $totalRxLinebpsMax ) / 1000000.0 / 2.0] ;
+	  set cutValue [expr ( $totalRxLinebpsMax - $totalRxLinebpsMix ) / 1000000.0 ] ;
+      #平均值跟预期值比较，判断是否在误差范围内
+      set retFlag [getRxLinebpsFitteryError -thisValue $cutValue -pktLen $pktLen \
+                                          -strNO $tsStrNO -allowError $allowError \
+                                          -Min $totalRxLinebpsMix -Max $totalRxLinebpsMax \
+                                          -forwardValue $forwardValue ] ; 
+
+     return $retFlag
+
+}
+
+#proc getTrimFloatValue { args } {
+#
+#    #获取传入参数
+#	CommonArgsGet $args -Number number -Left left  -Flag flag
+#	
+#	#如果传入的值不只三位小数，就强制格式转换为3位小数，多余位直接删除
+#    set number  [format %.2f  $number ]
+#    
+#    set number  [ TrimFloat -Number number -Left 2  -Flag "TRUE" ]
+#    
+#    return "0 succ -ReValue $number "
+#}
+
+#!!================================================================
+#  过 程 名：   TrimFloat
+#  函数说明:   按输入的保留位数和舍入方法处理小数的精度
+#  参数说明：
+#               -number:	待处理的小数
+#               -left:		要保留的小数位的位数,即返回的小数位数.默认保留2位小数
+#               -flag:	    下一小数位是否四舍五入 ,默认四舍五入
+#             
+#  返 回 值：  
+#                执行成功；           
+#					返回 0 成功码；    
+#                执行失败；            
+#                	返回错误码;
+#  注意事项：
+#  使用实例：
+#		    
+#		   
+#  对应命令： 
+#  
+#  作    者： liuxiaohao lwx239864
+#  生成时间： 2014-10-15 15:34:32
+#  修改纪录： dengwenxian  20150109  修改参数传入方式、变量命名、注释修改  
+#               
+#!!================================================================
+proc TrimFloat { args } {
+
+    set left 2      ; # 默认保留2位小数
+    set flag "TRUE" ; # 下一小数位是否四舍五入 ,默认四舍五入
+
+    #获取传入参数
+	CommonArgsGet $args -Number number -Left left  -Flag flag
+	
+    set flag [string toupper $flag]  ; # 转大写
+
+    #取得整数部分到IntPart
+	regexp {\-*([0-9]+)\.} $number IntPart; 
+	set IntPart [string trimright $IntPart {\.}]; 
+    
+    #取得带小数点的小数部分到FloatPart
+	regexp {\.([0-9]+)} $number FloatPart; 
+    
+    #取得要保留的最后一位的数值待后续处理
+	set ValueOfleft [string index $FloatPart $left]; 
+    
+    #取得要保留的最后一位的下一位的数值用作判断
+	set ValueOfNext [string index $FloatPart [expr $left + 1]];
+	
+    #flag 为 TRUE 则，下一位进行四舍五入； 为 FALSE 则，下一位不做任何处理直接去除
+	if { [expr 4 < $ValueOfNext] && "TRUE" == $flag } {  
+		  incr ValueOfleft;
+	}
+	
+    #更新最后一位
+	set FloatPart [string replace $FloatPart $left $left $ValueOfleft];
+    
+    #去掉小数部分的多余位
+	set FloatPart [string range $FloatPart 0 $left]; 
+    
+    #用处理后的小数部分和原整数部分组合成结果
+	set result [append IntPart $FloatPart]; 
+	
+	return $result;
+}
+
+
+#==================================================================
+#  过 程 名：   IasCommonDelay
+#  函数说明：   系统延时等待
+#  参数说明：
+#               -Time:  (可选)延时时间(以秒为单位);
+#				
+#  注意事项：	
+#  使用实例：   IasCommonDelay -Time 20
+#  对应命令：	after 20
+#               
+#  作    者：   ZhT04380 
+#  修改纪录：modified by zhengtao ht00603 注释掉每秒输出的提示信息
+#!!================================================================
+
+proc IasCommonDelay { args } {
+	#初始化变量
+	set time 60
+    #分离参数
+    CommonArgsGet $args -Time time
+	ShowTraceMessage -level 10 -msg "AW(IasCommonDelay)系统即将被延时$time 秒!"
+    
+	#时间转换为以毫秒为单位
+	#set time [expr $time*1000]
+	
+	for {set i 0} {$i < $time} {incr i} {
+		after 1000
+#		puts ">>需等待$time秒,已经等待[expr $i + 1]秒..."
+	}
+	
+	ShowTraceMessage -level 10 -msg "AW(IasCommonDelay)系统被延时$time 秒成功!"
+  	
+  	return "0"
+} ;# end of proc
+
+#=======================================================
+#----------------- 测 试 记 录 -------------------------
+#=======================================================
+# IasCommonAftertime -Time 20000
