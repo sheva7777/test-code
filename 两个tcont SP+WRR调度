@@ -1,0 +1,217 @@
+1、按照样本点要求在局端为T-CONT分配DBA带宽；在ONT上配置调度模式及调度权重； 2、使用测试仪发送16条下行背景流量，满流量发送，每条流流量均分，优先级覆盖0-7； 3、使用测试仪发送16条上行业务流，报文长度为固定包长 4、在测试仪上观察接收到的16条上行业务流的流量分布情况 5、修改调度为2SP+6WRR；使用测试仪发送16条上行业务流，报文长度为固定包长 6、在测试仪上观察接收到的16条上行业务流的流量分布情况
+
+待测T-CONT：T-CONT1、T-CONT7 调度模式：1PQ+7WRR WRR队列权重（pri从0～6）：5:5:10:10:15:15:40 T-CONT1的DBA：type2 a T-CONT7的DBA：type2 a 包长：128 256 随机 流16-流9流量：a*45% 流8-流1流量：a*40% 步骤6：调度模式：2PQ+6WRR WRR队列权重（pri从0～5）：10:10:20:20:20:20 包长：256 随机 流16-流9流量：a*20% 流8-流1流量：a*15%
+
+1、步骤4：tcont1和tcont7接收到的总流量与计算值一致；流8的报文完全通过，流1-流7的报文pps比例依次为1：1：2：2：3：3：8；流16的报文完全通过，流9～流15的报文pps比例依次为1：1：2：2：3：3：8； 2、步骤6：tcont1和tcont7接收到的总流量与计算值一致；流8-流7的报文完全通过，流1-流6的报文pps比例依次为1：1：2：2：2：2；流16-刘15的报文完全通过，流9～流14的报文pps比例依次为1：1：2：2：2：2；
+
+[TestLogicInfo]
+testClusterNames= IasGlobal/AsicQOSSceneTc
+productLib=
+toolLib=
+
+# 在TERM1控制台窗口上的建立/恢复配置命令/脚本 
+TERM1,SetupCommands=
+TERM1,RestoreCommands=
+TERM1,SetupScripts=
+
+[TestCaseData]
+FIELDS,      testCaseNo,        testClusters,      testCaseName,      	testCaseLevel,			args,    
+1, QOS_07_033,  IasGlobal/AsicQOSSceneTc, 两个tcont_SP+WRR调度, $chipVersion$execNetWorkQos0$caseLevel2, \
+-vlanUp0 $oltCvlanId00 \
+-vlanUp1 $oltCvlanId01 \
+-vlanUp2 $oltCvlanId02 \
+-vlanUp3 $oltCvlanId03 \
+-vlanUp4 $oltCvlanId04 \
+-vlanUp5 $oltCvlanId05 \
+-vlanUp6 $oltCvlanId06 \
+-vlanUp7 $oltCvlanId07 \
+-vlanUp8 $oltCvlanId70 \
+-vlanUp9 $oltCvlanId71 \
+-vlanUp10 $oltCvlanId72 \
+-vlanUp11 $oltCvlanId73 \
+-vlanUp12 $oltCvlanId74 \
+-vlanUp13 $oltCvlanId75 \
+-vlanUp14 $oltCvlanId76 \
+-vlanUp15 $oltCvlanId77 \
+-vlanDown0 $oltSvlanId00 \
+-vlanDown1 $oltSvlanId01 \
+-vlanDown2 $oltSvlanId02 \
+-vlanDown3 $oltSvlanId03 \
+-vlanDown4 $oltSvlanId04 \
+-vlanDown5 $oltSvlanId05 \
+-vlanDown6 $oltSvlanId06 \
+-vlanDown7 $oltSvlanId07 \
+-vlanDown8 $oltSvlanId70 \
+-vlanDown9 $oltSvlanId71 \
+-vlanDown10 $oltSvlanId72 \
+-vlanDown11 $oltSvlanId73 \
+-vlanDown12 $oltSvlanId74 \
+-vlanDown13 $oltSvlanId75 \
+-vlanDown14 $oltSvlanId76 \
+-vlanDown15 $oltSvlanId77 \
+-forwardPktNum " { -streamNO { 7 15} -tsStreamNO { 7 15} } " \
+-forwardMix0 "{-streamNO {{0 1 2 3 4 5 6 7}} -tsStreamNO {{0 1 2 3 4 5 6 7} }   -checktype totalBps  \
+                          -forwardValue {113.59} } \
+             {-streamNO {{0 1 2 3 4 5 6 7}} -tsStreamNO {{8 9 10 11 12 13 14 15} }   -checktype totalBps  \
+                          -forwardValue {113.59} } \
+             {-streamNO {7} -tsStreamNO {7} -checktype bps -forwardValue {40} } \
+             {-streamNO {0 1 2 3 4 5 6 } -tsStreamNO { 0 1 2 3 4 5 6 } \
+                         -checktype pps -forwardValue {1 1 2 2 3 3 8} } \
+             {-streamNO {15} -tsStreamNO {15} -checktype bps -forwardValue {45} } \
+             {-streamNO {0 1 2 3 4 5 6 } -tsStreamNO {8 9 10 11 12 13 14 } \
+                         -checktype pps -forwardValue {1 1 2 2 3 3 8} } \
+            " \
+-forwardMix1 "{-streamNO {{0 1 2 3 4 5 6 7}} -tsStreamNO {{0 1 2 3 4 5 6 7} }   -checktype totalBps  \
+                          -forwardValue {107.984} } \
+             {-streamNO {{0 1 2 3 4 5 6 7}} -tsStreamNO {{8 9 10 11 12 13 14 15} }   -checktype totalBps  \
+                          -forwardValue {107.984} } \
+             {-streamNO {7} -tsStreamNO {7} -checktype bps -forwardValue {40} } \
+             {-streamNO {0 1 2 3 4 5 6 } -tsStreamNO { 0 1 2 3 4 5 6 } \
+                         -checktype pps -forwardValue {1 1 2 2 3 3 8} } \
+             {-streamNO {15} -tsStreamNO {15} -checktype bps -forwardValue {45} } \
+             {-streamNO {0 1 2 3 4 5 6 } -tsStreamNO {8 9 10 11 12 13 14 } \
+                         -checktype pps -forwardValue {1 1 2 2 3 3 8} } \
+            " \
+-forwardMix2 "{-streamNO {{0 1 2 3 4 5 6 7}} -tsStreamNO {{0 1 2 3 4 5 6 7} }   -checktype totalBps  \
+                          -forwardValue {103.482} } \
+             {-streamNO {{0 1 2 3 4 5 6 7}} -tsStreamNO {{8 9 10 11 12 13 14 15} }   -checktype totalBps  \
+                          -forwardValue {103.482} } \
+             {-streamNO {7} -tsStreamNO {7} -checktype bps -forwardValue {40} } \
+             {-streamNO {0 1 2 3 4 5 6 } -tsStreamNO { 0 1 2 3 4 5 6 } \
+                         -checktype pps -forwardValue {1 1 2 2 3 3 8} } \
+             {-streamNO {15} -tsStreamNO {15} -checktype bps -forwardValue {45} } \
+             {-streamNO {0 1 2 3 4 5 6 } -tsStreamNO {8 9 10 11 12 13 14 } \
+                         -checktype pps -forwardValue {1 1 2 2 3 3 8} } \
+            " \
+-sentWaitTime 10 \
+,
+
+
+#1、按照样本点要求在局端为T-CONT分配DBA带宽；在ONT上配置调度模式及调度权重；
+#2、使用测试仪发送16条下行背景流量，满流量发送，每条流流量均分，优先级覆盖0-7；
+#3、使用测试仪发送16条上行业务流，报文长度为固定包长
+#4、在测试仪上观察接收到的16条上行业务流的流量分布情况
+#
+#
+#待测T-CONT：T-CONT1、T-CONT7
+#调度模式：1PQ+7WRR
+#WRR队列权重（pri从0～6）：5:5:10:10:15:15:40
+#T-CONT1的DBA：type2 a
+#T-CONT7的DBA：type2 a
+#包长：128 256 随机
+#流16-流9流量：a*45%
+#流8-流1流量：a*40%
+#
+#
+#1、步骤4：tcont1和tcont7接收到的总流量与计算值一致；
+#   流8的报文完全通过，流1-流7的报文pps比例依次为1：1：2：2：3：3：8；
+#   流16的报文完全通过，流9～流15的报文pps比例依次为1：1：2：2：3：3：8；
+#
+
+
+
+
+
+[TestLogicInfo]
+testClusterNames= IasGlobal/AsicQOSSceneTc
+productLib=
+toolLib=
+
+# 在TERM1控制台窗口上的建立/恢复配置命令/脚本 
+TERM1,SetupCommands=
+TERM1,RestoreCommands=
+TERM1,SetupScripts=
+
+[TestCaseData]
+FIELDS,      testCaseNo,        testClusters,      testCaseName,      	testCaseLevel,			args,    
+1, QOS_07_033,  IasGlobal/AsicQOSSceneTc, 两个tcont_SP+WRR调度, $chipVersion$execNetWorkQos0$caseLevel2, \
+-vlanUp0 $oltCvlanId00 \
+-vlanUp1 $oltCvlanId01 \
+-vlanUp2 $oltCvlanId02 \
+-vlanUp3 $oltCvlanId03 \
+-vlanUp4 $oltCvlanId04 \
+-vlanUp5 $oltCvlanId05 \
+-vlanUp6 $oltCvlanId06 \
+-vlanUp7 $oltCvlanId07 \
+-vlanUp8 $oltCvlanId70 \
+-vlanUp9 $oltCvlanId71 \
+-vlanUp10 $oltCvlanId72 \
+-vlanUp11 $oltCvlanId73 \
+-vlanUp12 $oltCvlanId74 \
+-vlanUp13 $oltCvlanId75 \
+-vlanUp14 $oltCvlanId76 \
+-vlanUp15 $oltCvlanId77 \
+-vlanDown0 $oltSvlanId00 \
+-vlanDown1 $oltSvlanId01 \
+-vlanDown2 $oltSvlanId02 \
+-vlanDown3 $oltSvlanId03 \
+-vlanDown4 $oltSvlanId04 \
+-vlanDown5 $oltSvlanId05 \
+-vlanDown6 $oltSvlanId06 \
+-vlanDown7 $oltSvlanId07 \
+-vlanDown8 $oltSvlanId70 \
+-vlanDown9 $oltSvlanId71 \
+-vlanDown10 $oltSvlanId72 \
+-vlanDown11 $oltSvlanId73 \
+-vlanDown12 $oltSvlanId74 \
+-vlanDown13 $oltSvlanId75 \
+-vlanDown14 $oltSvlanId76 \
+-vlanDown15 $oltSvlanId77 \
+-forwardPktNum " { -streamNO { 7 15} -tsStreamNO { 7 15} } " \
+-forwardMix0 "{-streamNO {{0 1 2 3 4 5 6 7}} -tsStreamNO {{0 1 2 3 4 5 6 7} }   -checktype totalBps  \
+                          -forwardValue {113.59} } \
+             {-streamNO {{0 1 2 3 4 5 6 7}} -tsStreamNO {{8 9 10 11 12 13 14 15} }   -checktype totalBps  \
+                          -forwardValue {113.59} } \
+             {-streamNO {7} -tsStreamNO {7} -checktype bps -forwardValue {40} } \
+             {-streamNO {0 1 2 3 4 5 6 } -tsStreamNO { 0 1 2 3 4 5 6 } \
+                         -checktype pps -forwardValue {1 1 2 2 3 3 8} } \
+             {-streamNO {15} -tsStreamNO {15} -checktype bps -forwardValue {45} } \
+             {-streamNO {0 1 2 3 4 5 6 } -tsStreamNO {8 9 10 11 12 13 14 } \
+                         -checktype pps -forwardValue {1 1 2 2 3 3 8} } \
+            " \
+-forwardMix1 "{-streamNO {{0 1 2 3 4 5 6 7}} -tsStreamNO {{0 1 2 3 4 5 6 7} }   -checktype totalBps  \
+                          -forwardValue {107.984} } \
+             {-streamNO {{0 1 2 3 4 5 6 7}} -tsStreamNO {{8 9 10 11 12 13 14 15} }   -checktype totalBps  \
+                          -forwardValue {107.984} } \
+             {-streamNO {7} -tsStreamNO {7} -checktype bps -forwardValue {40} } \
+             {-streamNO {0 1 2 3 4 5 6 } -tsStreamNO { 0 1 2 3 4 5 6 } \
+                         -checktype pps -forwardValue {1 1 2 2 3 3 8} } \
+             {-streamNO {15} -tsStreamNO {15} -checktype bps -forwardValue {45} } \
+             {-streamNO {0 1 2 3 4 5 6 } -tsStreamNO {8 9 10 11 12 13 14 } \
+                         -checktype pps -forwardValue {1 1 2 2 3 3 8} } \
+            " \
+-forwardMix2 "{-streamNO {{0 1 2 3 4 5 6 7}} -tsStreamNO {{0 1 2 3 4 5 6 7} }   -checktype totalBps  \
+                          -forwardValue {103.482} } \
+             {-streamNO {{0 1 2 3 4 5 6 7}} -tsStreamNO {{8 9 10 11 12 13 14 15} }   -checktype totalBps  \
+                          -forwardValue {103.482} } \
+             {-streamNO {7} -tsStreamNO {7} -checktype bps -forwardValue {40} } \
+             {-streamNO {0 1 2 3 4 5 6 } -tsStreamNO { 0 1 2 3 4 5 6 } \
+                         -checktype pps -forwardValue {1 1 2 2 3 3 8} } \
+             {-streamNO {15} -tsStreamNO {15} -checktype bps -forwardValue {45} } \
+             {-streamNO {0 1 2 3 4 5 6 } -tsStreamNO {8 9 10 11 12 13 14 } \
+                         -checktype pps -forwardValue {1 1 2 2 3 3 8} } \
+            " \
+-sentWaitTime 10 \
+,
+
+
+#1、按照样本点要求在局端为T-CONT分配DBA带宽；在ONT上配置调度模式及调度权重；
+#2、使用测试仪发送16条下行背景流量，满流量发送，每条流流量均分，优先级覆盖0-7；
+#3、使用测试仪发送16条上行业务流，报文长度为固定包长
+#4、在测试仪上观察接收到的16条上行业务流的流量分布情况
+#
+#
+#待测T-CONT：T-CONT1、T-CONT7
+#调度模式：1PQ+7WRR
+#WRR队列权重（pri从0～6）：5:5:10:10:15:15:40
+#T-CONT1的DBA：type2 a
+#T-CONT7的DBA：type2 a
+#包长：128 256 随机
+#流16-流9流量：a*45%
+#流8-流1流量：a*40%
+#
+#
+#1、步骤4：tcont1和tcont7接收到的总流量与计算值一致；
+#   流8的报文完全通过，流1-流7的报文pps比例依次为1：1：2：2：3：3：8；
+#   流16的报文完全通过，流9～流15的报文pps比例依次为1：1：2：2：3：3：8；
+#
