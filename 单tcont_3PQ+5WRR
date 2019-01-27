@@ -1,0 +1,127 @@
+#逻辑编号:
+逻辑名称:二次入队_shaper
+逻辑说明:
+组网编号: 
+预置条件:
+测试步骤:
+
+0010. 清除统计信息:
+     CntAllClr (-TermName $term3);
+
+0020. 清除所有队列统计:
+     QosQueueCntAllClr (-TermName $term3); 
+     
+0030 清除ont本地arl表:
+	L2MacAllDel (-TermName $term3);
+
+0040 配置TCONT绑定模板 :
+	IasOntLineProfileAdd (-TermName $term1  -OntLineProfileType gpon  -ProfileId $ontLineProfileId);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId0  -DbaProfileId $dbaProfileId2);
+
+0070 配置端口下的队列调度模式以及WRR权重:
+ 	QosSchSetOrg2 (-TermName $term3 -egr $tcont0_port_num -member_id 0 -member_sch_mode $Data(Schmode0) -member_wrr $Data(Wrr0));
+ 	QosSchSetOrg2 (-TermName $term3 -egr $tcont0_port_num -member_id 1 -member_sch_mode $Data(Schmode1) -member_wrr $Data(Wrr1));
+ 	QosSchSetOrg2 (-TermName $term3 -egr $tcont0_port_num -member_id 2 -member_sch_mode $Data(Schmode2) -member_wrr $Data(Wrr2));
+ 	QosSchSetOrg2 (-TermName $term3 -egr $tcont0_port_num -member_id 3 -member_sch_mode $Data(Schmode3) -member_wrr $Data(Wrr3));
+ 	QosSchSetOrg2 (-TermName $term3 -egr $tcont0_port_num -member_id 4 -member_sch_mode $Data(Schmode4) -member_wrr $Data(Wrr4));
+
+0100 往测试队列发送报文:
+    QosCheckNoFullStremMixData ( \
+                        -TsuID $tsuID -StreamSum $streamSum -Speed 20 \
+	                    -SendPort $sendPort -StaPort $staPort -StatMode $statMode \
+	                    -Vlan "$Data(vlanUp0) $Data(vlanUp1) $Data(vlanUp2) $Data(vlanUp3) \
+	                           $Data(vlanUp4) $Data(vlanUp5) $Data(vlanUp6) $Data(vlanUp7)\
+                              " \
+	                    -Pri $port5_vlanPri -SMac $port5_sourceMAC -DMac $port5_destinationMAC \
+                        -SampleTimes $sampleTimes -PktLenList $pktLenList64 \
+                        -SaveCfgFile $saveCfgtoFile -StaItem $statItem \
+                        -StatIteStopStream $statIteStopStream \
+						-AllowError $allowErrorQOSbps \
+						-SentWaitTime $Data(sentWaitTime) \
+						-ForwardMix $Data(forwardMix0) \
+						-FitteryType FALSE \
+						-StreamLoad $Data(StreamLoad) \
+						-ForwardPktNum $Data(forwardPktNum)  \
+                        -DoubleSteam "TRUE" \
+                        -DoubleSteamVlan " $Data(vlanDown0) $Data(vlanDown1) $Data(vlanDown2) $Data(vlanDown3) \
+                                     $Data(vlanDown4) $Data(vlanDown5) $Data(vlanDown6) $Data(vlanDown7)  \
+                                    " \
+                        -SendType "DOUBLE" \
+                        -StaPortSpeed $fullSpeedPercent \
+                        );
+
+0110 往测试队列发送报文:
+    QosCheckNoFullStremMixData ( \
+                        -TsuID $tsuID -StreamSum $streamSum -Speed 20 \
+	                    -SendPort $sendPort -StaPort $staPort -StatMode $statMode \
+	                    -Vlan "$Data(vlanUp0) $Data(vlanUp1) $Data(vlanUp2) $Data(vlanUp3) \
+	                           $Data(vlanUp4) $Data(vlanUp5) $Data(vlanUp6) $Data(vlanUp7)\
+                              " \
+	                    -Pri $port5_vlanPri -SMac $port5_sourceMAC -DMac $port5_destinationMAC \
+                        -SampleTimes $sampleTimes -PktLenList $pktLenList1024 \
+                        -SaveCfgFile $saveCfgtoFile -StaItem $statItem \
+                        -StatIteStopStream $statIteStopStream \
+						-AllowError $allowErrorQOSbps \
+						-SentWaitTime $Data(sentWaitTime) \
+						-ForwardMix $Data(forwardMix1) \
+						-FitteryType FALSE \
+						-StreamLoad $Data(StreamLoad) \
+						-ForwardPktNum $Data(forwardPktNum)  \
+                        -DoubleSteam "TRUE" \
+                        -DoubleSteamVlan " $Data(vlanDown0) $Data(vlanDown1) $Data(vlanDown2) $Data(vlanDown3) \
+                                     $Data(vlanDown4) $Data(vlanDown5) $Data(vlanDown6) $Data(vlanDown7)  \
+                                    " \
+                        -SendType "DOUBLE" \
+                        -StaPortSpeed $fullSpeedPercent \
+                        );
+
+0120 往测试队列发送报文:
+    QosCheckNoFullStremMixData ( \
+                        -TsuID $tsuID -StreamSum $streamSum -Speed 20 \
+	                    -SendPort $sendPort -StaPort $staPort -StatMode $statMode \
+	                    -Vlan "$Data(vlanUp0) $Data(vlanUp1) $Data(vlanUp2) $Data(vlanUp3) \
+	                           $Data(vlanUp4) $Data(vlanUp5) $Data(vlanUp6) $Data(vlanUp7)\
+                              " \
+	                    -Pri $port5_vlanPri -SMac $port5_sourceMAC -DMac $port5_destinationMAC \
+                        -SampleTimes $sampleTimes -PktLenList $pktLenListRandom \
+                        -SaveCfgFile $saveCfgtoFile -StaItem $statItem \
+                        -StatIteStopStream $statIteStopStream \
+						-AllowError $allowErrorQOSbps \
+						-SentWaitTime $Data(sentWaitTime) \
+						-ForwardMix $Data(forwardMix2) \
+						-FitteryType FALSE \
+						-StreamLoad $Data(StreamLoad) \
+						-ForwardPktNum $Data(forwardPktNum)  \
+                        -DoubleSteam "TRUE" \
+                        -DoubleSteamVlan " $Data(vlanDown0) $Data(vlanDown1) $Data(vlanDown2) $Data(vlanDown3) \
+                                     $Data(vlanDown4) $Data(vlanDown5) $Data(vlanDown6) $Data(vlanDown7)  \
+                                    " \
+                        -SendType "DOUBLE" \
+                        -StaPortSpeed $fullSpeedPercent \
+                        );
+
+资源释放：
+
+010 延迟一段时间:
+    IasCommonDelay( -Time $waitTime);
+    
+050 恢复端口下的队列调度模式以及WRR权重:
+ 	QosSchSetOrg2 (-TermName $term3 -egr $tcont0_port_num -member_id 0 -member_sch_mode 0 -member_wrr 0); 
+ 	QosSchSetOrg2 (-TermName $term3 -egr $tcont0_port_num -member_id 1 -member_sch_mode 0 -member_wrr 0);
+ 	QosSchSetOrg2 (-TermName $term3 -egr $tcont0_port_num -member_id 2 -member_sch_mode 0 -member_wrr 0);
+ 	QosSchSetOrg2 (-TermName $term3 -egr $tcont0_port_num -member_id 3 -member_sch_mode 0 -member_wrr 0);
+ 	QosSchSetOrg2 (-TermName $term3 -egr $tcont0_port_num -member_id 4 -member_sch_mode 0 -member_wrr 0);
+ 	    
+110 恢复TCONT绑定模板:
+	IasOntLineProfileAdd (-TermName $term1  -OntLineProfileType gpon  -ProfileId $ontLineProfileId);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId1  -DbaProfileId $dbaProfileId3);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId2  -DbaProfileId $dbaProfileId3);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId3  -DbaProfileId $dbaProfileId3);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId4  -DbaProfileId $dbaProfileId3);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId5  -DbaProfileId $dbaProfileId3);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId6  -DbaProfileId $dbaProfileId3);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId7  -DbaProfileId $dbaProfileId3);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId0  -DbaProfileId $dbaProfileId3);
+
+234.停流:
+    QosTsuRemoveStream (-TsuID $tsuID -Port $sendPort);
