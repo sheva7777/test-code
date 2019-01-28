@@ -1,0 +1,122 @@
+1、配置wred模板参数，选择wred的映射源为dscp映射的优先级值
+2、配置被测队列优先级7与wred模板绑定
+3、配置被测队列的最大深度为1000
+4、堵住被测队列的调度，令报文调度不出去
+5、配置ifc把报文dscp值改为value1
+6、配置dscp值value1映射出优先级为7
+7、往被测队列发送1000个报文，包长64，dscp值不等于value1
+8、观测报文入队个数和丢包个数
+
+
+wred模板参数：
+模板id：25
+t1:0，t2:0，
+t3:0，t4:0
+p0:100%，p1:100%，
+p2:100%，p3:100%
+DSCP映射模板个数：0-7
+
+1、步骤7，报文入队0个，丢弃1000个
+
+[TestLogicInfo]
+testClusterNames= IasGlobal/AsicQOSTc
+productLib=
+toolLib=
+
+# 在TERM1控制台窗口上的建立/恢复配置命令/脚本 
+TERM1,SetupCommands=
+TERM1,RestoreCommands=
+TERM1,SetupScripts=
+
+[TestCaseData]
+FIELDS,      testCaseNo,        testClusters,      testCaseName,      	testCaseLevel,			args,    
+1, QOS_Wred_01_040,  IasGlobal/AsicQOSTc, wred_映射源为dscp映射的优先级值_H, $chipVersion$execNetWorkQos0$caseLevel0, \
+-egr $up_port_num -wred_map_sel $WredDscpMapPri -vlan $oltCvlanId \
+-index 0 -dscp 2 -pri_map 7 \
+-ifcid 0 -field0 1 -key0 0 -mask0 0 -mode0 0 -field1 1 -key1 1 -mask1 0 -mode1 0 -igrs 0xf00 -cnt_en 1 -dscp_rep_en 1 \
+-pri 7 -ui_thr0 0 -ui_thr1 0 -ui_thr2 0 -ui_thr3 0 -ui_p0 100 -ui_p1 100 -ui_p2 100 -ui_p3 100 \
+-Qid [lindex $queuestruc(tcont0) $pri0] -QueueTempId [lindex $BmTcontQmcIdxs $pri0] -q_max0 1000 \
+-SendPort $tsuPort0 -StatPort $tsuPort1 -packetNum 1000 -Length 60 \
+-CmpList {-Qin 0 -Sum 1000} -Tol 0 \
+-PayLoad [string map {- ""} $MacPon][string map {- ""} $MacEth]8100[AsicVlanSwitchHex 0 0 $oltCvlanId]08004598001400000000FFFD3994C0550102C0000001 ,
+
+
+
+#逻辑编号:
+逻辑名称:wred_映射源为dscp映射的优先级值_H
+逻辑说明:
+组网编号: 
+预置条件:
+测试步骤:
+
+010. 清除统计信息:
+     CntAllClr (-TermName $term3);
+
+020. 清除所有队列统计:
+     QosQueueCntAllClr (-TermName $term3); 
+     
+030 清除ont本地arl表:
+	L2MacAllDel (-TermName $term3);
+
+110 配置wred的映射源为dscp映射值:
+	QosWredMapSelSet(-TermName $term3 -egr $Data(egr) -wred_map_sel $Data(wred_map_sel));  
+
+120 配置EQM不能往外调度:
+	QosSchManualEnSet(-TermName $term3 -en 1); 
+	
+130 配置端口加入vlan:
+ 	L2BcSet (-TermName $term3 -vlan $Data(vlan) -user_vlan $Data(vlan) -egr $Data(egr));  	
+
+140 配置ifc规则修改dscp值:
+	IfcSetExt (-TermName $term3 -id $Data(ifcid) -eof 1 -igrs $Data(igrs) -cnt_en $Data(cnt_en) \
+	           -dscp_rep_en $Data(dscp_rep_en) -dscp $Data(dscp));     
+    
+150 配置dscp映射的优先级:
+    QosDscpProfileSet(-TermName $term3 -index $Data(index) -dscp $Data(dscp)  -pri_map $Data(pri_map));
+
+160 队列绑定wred模板:    
+    QosWredTableSet (-TermName $term3 -qid $Data(Qid) -pri $Data(pri) -valid 1 -thr0 $Data(ui_thr0) -thr1 $Data(ui_thr1) -thr2 $Data(ui_thr2) -thr3 $Data(ui_thr3) -p0 $Data(ui_p0) -p1 $Data(ui_p1) -p2 $Data(ui_p2) -p3 $Data(ui_p3));
+    
+170 设置队列最大深度:    
+    QosQmcTableSet ( -TermName $term3 -index $Data(QueueTempId) -q_ifb_max $Data(q_max0) -q_ifb_private 0 -q_efb_max $Data(q_max0) -q_efb_private 0 );
+
+180 往测试队列发送报文:
+	AsicTgSingleStreamSendAndStat(-TsuID $tsuID -SendPort $Data(SendPort) -StaPort $Data(StatPort) -StatMode port \
+		-Time 10 -SendMode SINGLE_BURST -BurPacket $Data(packetNum) -Speed 10 \
+		-StreamSum 1 -StreamPara "{-StreamName G1 -ProType CUSTOM -RepeatCount 1 -Length $Data(Length) -PayLoad  $Data(PayLoad) }" ) ;  
+
+190 查看入队统计情况:
+    QosQueueCntGetWredCompare ( -TermName $term3 -Qid $Data(Qid) -CmpList $Data(CmpList) -Tol $Data(Tol));
+     
+
+
+	
+
+资源释放：
+
+010 延迟一段时间:
+    IasCommonDelay( -Time $waitTime);
+    
+020 恢复wred的映射源:
+	QosWredMapSelSet(-TermName $term3 -egr $Data(egr) -wred_map_sel $DefWredPri);
+	
+030 恢复EQM往外调度:
+	QosSchManualEnSet(-TermName $term3 -en 0);
+	
+040 删除端口加入vlan:
+ 	L2BcAllDel (-TermName $term3 -vlan $Data(vlan));
+ 	
+050 队列不绑定wred模板:    
+    QosWredTableSet (-TermName $term3 -qid $Data(Qid) -pri $Data(pri) -valid 0 );
+    
+060 恢复队列最大深度:    
+    QosQmcTableSet ( -TermName $term3 -index $Data(QueueTempId) -q_ifb_max [lindex $WredQueueMax0 $qdidx(maxdepth)] -q_ifb_private [lindex $WredQueueMax0 $qdidx(privatebuf)] -q_efb_max [lindex $WredQueueMax0 $qdidx(maxdepth)] -q_efb_private [lindex $WredQueueMax0 $qdidx(privatebuf)];
+    
+070 删除ifc规则:    
+    IfcDelExt (-TermName $term3 -begin 0 -end max);
+     
+080 恢复dscp映射的优先级:
+    QosDscpProfileSet(-TermName $term3 -index $Data(index) -dscp $Data(dscp)  -pri_map 0);
+
+234.停流:
+    QosTsuRemoveStream (-TsuID $tsuID);
