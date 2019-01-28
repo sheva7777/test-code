@@ -1,0 +1,139 @@
+1、按照组网图建立拓扑结构 2、配置通用调度器0下挂的3条队列为SP调度，通用调度器7下挂的2条队列为WRR调度，调度比例为1:2 3、配置协议通路转发，使满足以下转发：  数据流1，进入队列0后，二次入队进入tcont0的队列0； 数据流2，进入队列1后，二次入队进入tcont0的队列0； 数据流3，进入队列2后，二次入队进入tcont1的队列0； 数据流4，进入队列3后，二次入队进入tcont2的队列0； 数据流4，进入队列4后，二次入队进入tcont3的队列0； 4、配置通用调度器0的shaper为80M，通用调度器7的shaper为60M 5、使用测试仪发送数据流1-5各50M，观测tcont0~3收到的流量
+
+测试队列： 通用调度器0 输入端0-2挂的队列0-2； 通用调度器7 输入端0-1挂的队列3-4； 发送包长：64 2000 随机
+
+1、步骤5，tcont0收到的流量为30M，tcont1收到的流量为50M，tcont2收到的流量为20M，tcont3收到的流量为40M
+
+[TestLogicInfo]
+testClusterNames= IasGlobal/AsicQOSTc
+productLib=
+toolLib=
+
+# 在TERM1控制台窗口上的建立/恢复配置命令/脚本 
+TERM1,SetupCommands=
+TERM1,RestoreCommands=
+TERM1,SetupScripts=
+#0小时 10分钟 47秒
+[TestCaseData]
+FIELDS,      testCaseNo,        testClusters,      testCaseName,      	testCaseLevel,			args,    
+1, QOS_Shaper_08_010,  IasGlobal/AsicQOSTc, 二次入队_shaper, $chipVersion$execNetWorkQos0$caseLevel0, \
+-vlan0 $oltCvlanId -vlan1 $oltCvlanId1 -vlan2 $oltCvlanId2 -vlan3 $oltCvlanId3 -egr $up_port_num \
+-sfc_id0 0 -sfc_id1 1 -sfc_id2 2 -sfc_id3 3 -rate0 5000 -rate1 3750 \
+-forward {0.0 30000 50000 [expr 1 * 1.0 / 3 * 60 * 1000] [expr 2 * 1.0 / 3 * 60 * 1000]} \
+-forwardMix  " {-streamNO {0 1 2 3 4  } -tsStreamNO {0 1 2 3 4  } -checktype bps \
+                 -forwardValue {0 30 50 [expr 1 * 1.0 / 3 * 60 ] [expr 2 * 1.0 / 3 * 60 ] } }  \
+              " \
+,                                                     
+
+
+
+#逻辑编号:
+逻辑名称:二次入队_shaper
+逻辑说明:
+组网编号: 
+预置条件:
+测试步骤:
+
+020. 清除统计信息:
+     CntAllClr (-TermName $term3);
+
+020. 清除所有队列统计:
+     QosQueueCntAllClr (-TermName $term3); 
+     
+030 清除ont本地arl表:
+	L2MacAllDel (-TermName $term3);
+
+050 配置TCONT绑定模板:
+	IasOntLineProfileAdd (-TermName $term1  -OntLineProfileType gpon  -ProfileId $ontLineProfileId); 
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId0  -DbaProfileId $dbaProfileId2);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId1  -DbaProfileId $dbaProfileId2);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId2  -DbaProfileId $dbaProfileId2);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId3  -DbaProfileId $dbaProfileId2);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId4  -DbaProfileId $dbaProfileId2);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId5  -DbaProfileId $dbaProfileId2);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId6  -DbaProfileId $dbaProfileId2);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId7  -DbaProfileId $dbaProfileId2);
+
+050 配置端口加入vlan:
+ 	L2BcSet (-TermName $term3 -vlan $Data(vlan0) -user_vlan $Data(vlan0) -egr $Data(egr)); 
+ 	L2BcSet (-TermName $term3 -vlan $Data(vlan1) -user_vlan $Data(vlan1) -egr $Data(egr));
+ 	L2BcSet (-TermName $term3 -vlan $Data(vlan2) -user_vlan $Data(vlan2) -egr $Data(egr));
+ 	L2BcSet (-TermName $term3 -vlan $Data(vlan3) -user_vlan $Data(vlan3) -egr $Data(egr));
+ 	
+090 配置预调度所挂队列: 
+   func_qos_presch_create(-TermName $term3 -id 0);
+   func_qos_presch_create(-TermName $term3 -id 1);
+   QosGssaTableSet (-TermName $term3 -index 17 -eqm_chid 16 -input0_gnum 0 -input1_gnum 1 -input2_gnum 1 -input3_gnum 1 -input4_gnum 1 -input5_gnum 1 -input6_gnum 1 -input7_gnum 1); 
+   QosGssaTableSet (-TermName $term3 -index 18 -eqm_chid 16 -input0_gnum 0 -input1_gnum 0 -input2_gnum 0 -input3_gnum 0 -input4_gnum 0 -input5_gnum 0 -input6_gnum 0 -input7_gnum 0);
+
+   
+090 配置预调度的调度器shaper: 
+   QosShtTableSet (-TermName $term3 -index 1 -xir $Data(rate0) -xbs 15625);
+   QosSsctTableSet (-TermName $term3 -index 17 -pir_shp_mnum 1 -sshp_mode 0);
+   QosShtTableSet (-TermName $term3 -index 18 -xir $Data(rate1) -xbs 15625);
+   QosSsctTableSet (-TermName $term3 -index 17 -pir_shp_mnum 1 -sshp_mode 0);
+
+
+    AsicCurCfgGet (-TermName $term3 );
+    
+080 配置预调度队列入队映射表:
+    GponMapSfcSet(-TermName $term3 -sfc_id 0 -pre_sch_en 1 -valid 1 -pre_sch 0);
+    GponMapSfcSet(-TermName $term3 -sfc_id 1 -pre_sch_en 1 -valid 1 -pre_sch 0);
+    GponMapSfcSet(-TermName $term3 -sfc_id 2 -pre_sch_en 1 -valid 1 -pre_sch 0);
+    GponMapSfcSet(-TermName $term3 -sfc_id 3 -pre_sch_en 1 -valid 1 -pre_sch 0);
+    GponMapSfcSet(-TermName $term3 -sfc_id 4 -pre_sch_en 1 -valid 1 -pre_sch 0);
+    GponMapSfcSet(-TermName $term3 -sfc_id 5 -pre_sch_en 1 -valid 1 -pre_sch 1);
+    GponMapSfcSet(-TermName $term3 -sfc_id 6 -pre_sch_en 1 -valid 1 -pre_sch 1);
+    GponMapSfcSet(-TermName $term3 -sfc_id 7 -pre_sch_en 1 -valid 1 -pre_sch 1);
+    
+
+     
+130 往测试队列发送报文:
+    QosCheckNoFullStremMixData ( \
+                        -OltSvlanId $oltSvlanId -BlackStreamFlg $blackStreamFlg \
+                        -TsuID $tsuID -StreamSum 5 -Speed 25 \
+	                    -SendPort $sendPort -StaPort $staPort -StatMode $statMode -Vlan "$Data(vlan0) $Data(vlan0) $Data(vlan1) $Data(vlan2) $Data(vlan3)" \
+	                    -Pri $port5_vlanPri -SMac $port5_sourceMAC -DMac $port5_destinationMAC \
+                        -SampleTimes $sampleTimes -PktLenList $pktLenList \
+                        -SaveCfgFile $saveCfgtoFile -StaItem $statItem \
+                        -StatIteStopStream $statIteStopStream \
+						-AllowError $allowErrorQOSbps \
+						-AllowErrorFittery $allowErrorFittery \
+						-PayLoad  INCRBYTE \
+                        );
+
+资源释放：
+010 删除预调度的调度器shaper:
+   QosSsctTableSet (-TermName $term3 -index 17 -pir_shp_mnum 0 -sshp_mode 0);
+   QosSsctTableSet (-TermName $term3 -index 18 -pir_shp_mnum 0 -sshp_mode 0);
+
+020 延迟一段时间:
+    IasCommonDelay( -Time $waitTime);
+    
+050 删除端口加入vlan:
+ 	L2BcAllDel (-TermName $term3 -vlan $Data(vlan0)); 
+ 	L2BcAllDel (-TermName $term3 -vlan $Data(vlan1));
+ 	L2BcAllDel (-TermName $term3 -vlan $Data(vlan2));
+ 	L2BcAllDel (-TermName $term3 -vlan $Data(vlan3));
+ 	
+
+
+100 恢复二次入队的GSSA表配置:
+ 	QosGssaTableSet (-TermName $term3 -index 17 -schrule_sel 0 -input0_gnum 7 \
+ 	-input1_gnum 6 -input2_gnum 5 -input3_gnum 4 -input4_gnum 3 -input5_gnum 2 -input6_gnum 1 -input7_gnum 0);
+
+    
+110 恢复TCONT绑定模板:
+	IasOntLineProfileAdd (-TermName $term1  -OntLineProfileType gpon  -ProfileId $ontLineProfileId);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId1  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId2  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId3  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId4  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId5  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId6  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId7  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId0  -DbaProfileId $dbaProfileId);
+
+234.停流:
+    QosTsuRemoveStream (-TsuID $tsuID -Port $sendPort);
+    AsicCurCfgGet (-TermName $term3 );
