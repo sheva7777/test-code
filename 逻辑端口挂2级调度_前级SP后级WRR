@@ -1,0 +1,250 @@
+1、按照组网图建立拓扑结构 2、配置通用调度器0属于组3，队列3属于组2，通用调度器1属于组1，队列7属于组0 3、通用调度器0内，配置队列0，队列1，队列2属于组0，调度比例分别为1:2:4 4、通用调度器1内，配置队列4，队列5，队列6属于组0，调度比例分别为63:126:252 5、使用测试仪往8条队列各发送100M流量，同时往另一个逻辑端口的8条队列发送背景流量，配置被测逻辑端口shaper 99M，观察调度情况； 6、配置被测逻辑端口shaper 240M，观察调度情况 7、修改测试端口各优先级发包流量：优先级0、1、2、3、7各100M，优先级4、5、6各70M，观察调度情况； 8、修改测试端口各优先级发包流量：所有优先级均发包100M，配置被测逻辑端口shaper 499M，观察调度情况 9、配置被测逻辑端口shaper 640M，观察调度情况 10、修改测试端口各优先级发包流量：优先级3、4、5、6、7各100M，优先级0、1、2各70M，配置被测逻辑端口shaper 640M，观察调度情况 11、去使能被测逻辑端口shaper ，观察调度情况
+
+被测逻辑端口：tcont6 背景流逻辑端口：ge0 发送包长：64,2000，64~2000随机 覆盖以下两种场景： 1）所有队列的流量大于WRR分配的带宽； 2）部分队列的流量大于WRR分配的带宽、部分队列的流量小于WRR分配的带宽。
+
+1、步骤5，只调度队列7，总流量为99M 2、步骤6，只调度队列4~7，队列7能出100M，队列4~6总共出140M，调度pps比例为1:2:4 3、步骤7，只调度队列4~7，队列7能出100M，队列6能出70M；队列4~5总共出70M，调度pps比例为1:2 4、步骤8，只调度队列3~7，队列4~7各出100M，队列3出99M 5、步骤9，所有队列都能调度，队列3~7能出100M，队列0~2总共出140M，调度pps比例为1:2:4 6、步骤10，所有队列都能调度，队列3~7能出100M，队列2出70M；队列0~1总共出70M，调度pps比例为1:2 7、步骤11，全部队列都能调度，每条队列正常转发，不会出现丢包，错包
+
+[TestLogicInfo]
+testClusterNames= IasGlobal/AsicQOSTc
+productLib=
+toolLib=
+
+# 在TERM1控制台窗口上的建立/恢复配置命令/脚本 
+TERM1,SetupCommands=
+TERM1,RestoreCommands=
+TERM1,SetupScripts=
+
+[TestCaseData]
+FIELDS,      testCaseNo,        testClusters,      testCaseName,      	testCaseLevel,			args,    
+1, QOS_Schedule_02_040,  IasGlobal/AsicQOSTc, 逻辑端口挂2级调度_前级SP_后级WRR, $chipVersion$execNetWorkQos0$caseLevel1, \
+-vlan $oltCvlanId6 -egr $up_port_num \
+-pir_wgt0 1 -pir_wgt1 2 -pir_wgt2 4 -pir_wgt3 63 -pir_wgt4 126 -pir_wgt5 252 \
+-rate1 6187 \
+-rate2 15000 \
+-rate3 31187 \
+-rate4 40000 \
+-rate5 50000 \
+-forwardMix1 " {-streamNO {0 1 2 3 4 5 6 7 } -tsStreamNO {0 1 2 3 4 5 6 7} -checktype bps  \
+                -forwardValue {0.0 0.0 0.0 0.0 0.0 0.0 0.0 99.0} } \
+            " \
+-forwardMix2 " { -streamNO {{0} {1} {2} {3} {4 5 6} {7}} -tsStreamNO {{0} {1} {2} {3} {4 5 6} {7}} -checktype totalbps \
+                -forwardValue {0.0 0.0 0.0 0.0 140 100} } \
+               {-streamNO {4 5 6 } -tsStreamNO {4 5 6} -checktype pps  -forwardValue {1 2 4} } \
+            " \
+-forwardMix3 " {-streamNO {0 1 2 3 4 5 6 7 } -tsStreamNO {0 1 2 3 4 5 6 7} -checktype bps  \
+                -forwardValue {0.0 0.0 0.0 99.0 100.0 100.0 100.0 100.0} } \
+            " \
+-forwardMix4 " {-streamNO {{0 1 2} {3} {4} {5} {6} {7} } -tsStreamNO {{0 1 2} {3} {4} {5} {6} {7}} -checktype totalbps  \
+                -forwardValue {140 100 100 100 100 100} } \
+               {-streamNO {0 1 2} -tsStreamNO {0 1 2} -checktype pps  \
+                -forwardValue {1 2 4} } \
+            " \
+-forwardMix5 " {-streamNO {0 1 2 3 4 5 6 7} -tsStreamNO {0 1 2 3 4 5 6 7} -checktype bps  \
+                -forwardValue {100 100 100 100 100 100 100 100 } } \
+            " \
+,
+
+
+
+
+#逻辑编号:  QOS_03_070
+逻辑名称:逻辑端口挂2级调度_前级SP_后级WRR
+逻辑说明:
+组网编号: 
+预置条件:
+测试步骤:
+
+010. 清除统计信息:
+     CntAllClr (-TermName $term3);
+
+020. 清除所有队列统计:
+     QosQueueCntAllClr (-TermName $term3); 
+     
+030 清除ont本地arl表:
+	L2MacAllDel (-TermName $term3);
+
+040 配置TCONT绑定模板:
+	IasOntLineProfileAdd (-TermName $term1  -OntLineProfileType gpon  -ProfileId $ontLineProfileId); 
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId0  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId6  -DbaProfileId $dbaProfileId);
+
+050 配置端口加入vlan:
+ 	L2BcSet (-TermName $term3 -vlan $Data(vlan) -user_vlan $Data(vlan) -egr $Data(egr));
+ 	
+060 把队列从父调度器(逻辑端口)中删除:
+ 	QosQueueFromSchDel (-TermName $term3 -qid [lindex $ShaTcont6Queues 0]);
+ 	QosQueueFromSchDel (-TermName $term3 -qid [lindex $ShaTcont6Queues 1]);
+ 	QosQueueFromSchDel (-TermName $term3 -qid [lindex $ShaTcont6Queues 2]);
+ 	QosQueueFromSchDel (-TermName $term3 -qid [lindex $ShaTcont6Queues 4]);
+ 	QosQueueFromSchDel (-TermName $term3 -qid [lindex $ShaTcont6Queues 5]);
+ 	QosQueueFromSchDel (-TermName $term3 -qid [lindex $ShaTcont6Queues 6]);
+ 	
+070 把子调度器挂到父调度器(逻辑端口)上:
+ 	QosSchToSchAdd (-TermName $term3 -id_parent $tcont6_port_num -id_child $free_sch_num2 -pri 0 -logic 1);
+ 	QosSchToSchAdd (-TermName $term3 -id_parent $tcont6_port_num -id_child $free_sch_num1 -pri 4 -logic 1);
+
+080 把队列挂到子调度器上:
+ 	QosQueueToSchAdd (-TermName $term3 -schid $free_sch_num2 -qid [lindex $ShaTcont6Queues 0] -pri 0 -logic 0);
+ 	QosQueueToSchAdd (-TermName $term3 -schid $free_sch_num2 -qid [lindex $ShaTcont6Queues 1] -pri 1 -logic 0);
+ 	QosQueueToSchAdd (-TermName $term3 -schid $free_sch_num2 -qid [lindex $ShaTcont6Queues 2] -pri 2 -logic 0);
+ 	QosQueueToSchAdd (-TermName $term3 -schid $free_sch_num1 -qid [lindex $ShaTcont6Queues 4] -pri 0 -logic 0);
+ 	QosQueueToSchAdd (-TermName $term3 -schid $free_sch_num1 -qid [lindex $ShaTcont6Queues 5] -pri 1 -logic 0);
+ 	QosQueueToSchAdd (-TermName $term3 -schid $free_sch_num1 -qid [lindex $ShaTcont6Queues 6] -pri 2 -logic 0);
+ 	
+090 修改队列间的调度关系:
+ 	QosGssaTableSet (-TermName $term3 -index $tcont6_port_num -eqm_chid 6 -input0_gnum 7 -input1_gnum 6 -input2_gnum 5 -input3_gnum 4 -input4_gnum 3 -input5_gnum 2 -input6_gnum 1 -input7_gnum 0);
+ 	QosGssaTableSet (-TermName $term3 -index $free_sch_num2 -eqm_chid 6 -schrule_sel 0 -input0_gnum 0 -input1_gnum 0 -input2_gnum 0);
+ 	QosGssaTableSet (-TermName $term3 -index $free_sch_num1 -eqm_chid 6 -schrule_sel 0 -input0_gnum 0 -input1_gnum 0 -input2_gnum 0);
+ 	
+100 配置队列的调度权重:
+ 	QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont6Queues 0] -pir_wgt $Data(pir_wgt0) -schrule_sel 0);
+ 	QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont6Queues 1] -pir_wgt $Data(pir_wgt1) -schrule_sel 0);
+ 	QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont6Queues 2] -pir_wgt $Data(pir_wgt2) -schrule_sel 0);
+ 	QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont6Queues 4] -pir_wgt $Data(pir_wgt3) -schrule_sel 0);
+ 	QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont6Queues 5] -pir_wgt $Data(pir_wgt4) -schrule_sel 0);
+ 	QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont6Queues 6] -pir_wgt $Data(pir_wgt5) -schrule_sel 0);
+
+
+110 配置shaper模板:
+    QosShtTableSet (-TermName $term3 -index 1 -xir $Data(rate1) -xbs 15625);
+
+120 配置调度器(逻辑端口)绑定shaper模板:
+ 	QosSsctTableSet (-TermName $term3 -index $tcont6_port_num -pir_shp_mnum 1 -sshp_mode 0);
+
+130 往测试队列发送报文,只调度队列7，总流量为99M:
+    QosCheckNoFullStremMixData ( \
+                        -TsuID $tsuID -StreamSum $streamSum -Speed $speedPercent  \
+	                    -SendPort $sendPort -StaPort $staPort -StatMode $statMode -Vlan $Data(vlan) \
+	                    -Pri $port5_vlanPri -SMac $port5_sourceMAC -DMac $port5_destinationMAC \
+                        -SampleTimes $sampleTimes -PktLenList $pktLenList \
+                        -SaveCfgFile $saveCfgtoFile -StaItem $statItem \
+                        -StatIteStopStream $statIteStopStream \
+						-AllowError $allowErrorQOSbps \
+						-ForwardMix $Data(forwardMix1) \
+						-AllowErrorFittery $allowErrorFittery \
+                        );
+                    
+0210 配置shaper模板,240M:
+    QosShtTableSet (-TermName $term3 -index 1 -xir $Data(rate2) -xbs 15625);
+
+0230.往测试队列发送报文，不停流.只调度队列4~7，队列7能出100M，队列4~6总共出140M，调度pps比例为1-2-4:
+    QosCheckNoFullStremMixData ( \
+                        -TsuID $tsuID -StreamSum $streamSum -Speed $speedPercent  \
+	                    -SendPort $sendPort -StaPort $staPort -StatMode $statMode -Vlan $Data(vlan) \
+	                    -Pri $port5_vlanPri -SMac $port5_sourceMAC -DMac $port5_destinationMAC \
+                        -SampleTimes $sampleTimes -PktLenList $pktLenList \
+                        -SaveCfgFile $saveCfgtoFile -StaItem $statItem \
+                        -StatIteStopStream $statIteStopStream \
+						-AllowError $allowErrorQOSbps \
+						-ForwardMix $Data(forwardMix2) \
+						-AllowErrorFittery $allowErrorFittery \
+                        );
+
+0310 配置shaper模板,499M:
+    QosShtTableSet (-TermName $term3 -index 1 -xir $Data(rate3) -xbs 15625);
+
+0330.往测试队列发送报文，不停流.只调度队列3~7，队列4~7各出100M，队列3出99M:
+    QosCheckNoFullStremMixData ( \
+                        -TsuID $tsuID -StreamSum $streamSum -Speed $speedPercent  \
+	                    -SendPort $sendPort -StaPort $staPort -StatMode $statMode -Vlan $Data(vlan) \
+	                    -Pri $port5_vlanPri -SMac $port5_sourceMAC -DMac $port5_destinationMAC \
+                        -SampleTimes $sampleTimes -PktLenList $pktLenList \
+                        -SaveCfgFile $saveCfgtoFile -StaItem $statItem \
+                        -StatIteStopStream $statIteStopStream \
+						-AllowError $allowErrorQOSbps \
+						-ForwardMix $Data(forwardMix3) \
+						-AllowErrorFittery $allowErrorFittery \
+                        );
+
+0410 配置shaper模板,640M:
+    QosShtTableSet (-TermName $term3 -index 1 -xir $Data(rate4) -xbs 15625);
+
+0430.往测试队列发送报文，不停流.所有队列都能调度，队列3~7能出100M，队列0~2总共出140M，调度pps比例为1-2-4:
+    QosCheckNoFullStremMixData ( \
+                        -TsuID $tsuID -StreamSum $streamSum -Speed $speedPercent  \
+	                    -SendPort $sendPort -StaPort $staPort -StatMode $statMode -Vlan $Data(vlan) \
+	                    -Pri $port5_vlanPri -SMac $port5_sourceMAC -DMac $port5_destinationMAC \
+                        -SampleTimes $sampleTimes -PktLenList $pktLenList \
+                        -SaveCfgFile $saveCfgtoFile -StaItem $statItem \
+                        -StatIteStopStream $statIteStopStream \
+						-AllowError $allowErrorQOSbps \
+						-ForwardMix $Data(forwardMix4) \
+						-AllowErrorFittery $allowErrorFittery \
+                        );
+
+0510 恢复调度器(逻辑端口)绑定shaper模板0:
+ 	QosSsctTableSet (-TermName $term3 -index $tcont6_port_num -pir_shp_mnum 0 -sshp_mode 0);
+
+0530.往测试队列发送报文，不停流.全部队列都能调度，每条队列出100M:
+    QosCheckNoFullStremMixData ( \
+                        -TsuID $tsuID -StreamSum $streamSum -Speed $speedPercent  \
+	                    -SendPort $sendPort -StaPort $staPort -StatMode $statMode -Vlan $Data(vlan) \
+	                    -Pri $port5_vlanPri -SMac $port5_sourceMAC -DMac $port5_destinationMAC \
+                        -SampleTimes $sampleTimes -PktLenList $pktLenList \
+                        -SaveCfgFile $saveCfgtoFile -StaItem $statItem \
+                        -StatIteStopStream $statIteStopStream \
+						-AllowError $allowErrorQOSbps \
+						-ForwardMix $Data(forwardMix5) \
+						-AllowErrorFittery $allowErrorFittery \
+                        );
+	
+
+资源释放：
+
+010 延迟一段时间:
+    IasCommonDelay( -Time $waitTime);
+    
+020 删除端口加入vlan:
+ 	L2BcAllDel (-TermName $term3 -vlan $Data(vlan));
+
+030 恢复调度器(逻辑端口)绑定shaper模板0:
+ 	QosSsctTableSet (-TermName $term3 -index $tcont6_port_num -pir_shp_mnum 0 -sshp_mode 0);
+ 	 
+040 恢复shaper模板:
+    QosShtTableSet (-TermName $term3 -index 1 -xir 0 -xbs 0);
+ 	
+050 把队列从子调度器中删除:
+ 	QosQueueFromSchDel (-TermName $term3 -qid [lindex $ShaTcont6Queues 0]);
+ 	QosQueueFromSchDel (-TermName $term3 -qid [lindex $ShaTcont6Queues 1]);
+ 	QosQueueFromSchDel (-TermName $term3 -qid [lindex $ShaTcont6Queues 2]);
+ 	QosQueueFromSchDel (-TermName $term3 -qid [lindex $ShaTcont6Queues 4]);
+ 	QosQueueFromSchDel (-TermName $term3 -qid [lindex $ShaTcont6Queues 5]);
+ 	QosQueueFromSchDel (-TermName $term3 -qid [lindex $ShaTcont6Queues 6]);
+ 	
+060 把子调度器从父调度器(逻辑端口)中删除:
+ 	QosSchFromSchDel (-TermName $term3 -schid $free_sch_num2);
+ 	QosSchFromSchDel (-TermName $term3 -schid $free_sch_num1); 	
+
+070 把队列挂回到父调度器(逻辑端口)上:
+ 	QosQueueToSchAdd (-TermName $term3 -schid $tcont6_port_num -qid [lindex $ShaTcont6Queues 0] -pri 0 -logic 1);
+ 	QosQueueToSchAdd (-TermName $term3 -schid $tcont6_port_num -qid [lindex $ShaTcont6Queues 1] -pri 1 -logic 1);
+ 	QosQueueToSchAdd (-TermName $term3 -schid $tcont6_port_num -qid [lindex $ShaTcont6Queues 2] -pri 2 -logic 1);
+ 	QosQueueToSchAdd (-TermName $term3 -schid $tcont6_port_num -qid [lindex $ShaTcont6Queues 4] -pri 4 -logic 1);
+ 	QosQueueToSchAdd (-TermName $term3 -schid $tcont6_port_num -qid [lindex $ShaTcont6Queues 5] -pri 5 -logic 1);
+ 	QosQueueToSchAdd (-TermName $term3 -schid $tcont6_port_num -qid [lindex $ShaTcont6Queues 6] -pri 6 -logic 1);
+
+080 恢复队列间的调度关系:
+ 	QosGssaTableSet (-TermName $term3 -index $tcont6_port_num -input0_gnum 7 -input1_gnum 6 -input2_gnum 5 -input3_gnum 4 -input4_gnum 3 -input5_gnum 2 -input6_gnum 1 -input7_gnum 0);
+
+090 恢复队列的调度权重:
+ 	QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont6Queues 0] -pir_wgt 0 -schrule_sel 0);
+ 	QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont6Queues 1] -pir_wgt 0 -schrule_sel 0);
+ 	QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont6Queues 2] -pir_wgt 0 -schrule_sel 0);
+ 	QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont6Queues 4] -pir_wgt 0 -schrule_sel 0);
+ 	QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont6Queues 5] -pir_wgt 0 -schrule_sel 0);
+ 	QosStsQueueTableSet (-TermName $term3 -index [lindex $ShaTcont6Queues 6] -pir_wgt 0 -schrule_sel 0);
+ 	 	
+110 恢复TCONT绑定模板:
+	IasOntLineProfileAdd (-TermName $term1  -OntLineProfileType gpon  -ProfileId $ontLineProfileId);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId1  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId2  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId3  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId4  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId5  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId6  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId7  -DbaProfileId $dbaProfileId1);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId0  -DbaProfileId $dbaProfileId); 		     
+
+234.停流:
+    QosTsuRemoveStream (-TsuID $tsuID);
+    AsicCurCfgGet (-TermName $term3 );
