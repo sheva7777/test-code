@@ -1,0 +1,241 @@
+1、按照样本点要求，为T-CONT分配DBA带宽；在ONT上配置指定调度模式及调度权重； 2、使用测试仪发送8条下行背景流量，满流量发送，每条流流量均分，优先级覆盖0-7； 3、使用测试仪发送8条上行业务流，报文长度覆盖样本点 4、优先级为1和优先级为2的流分别在转发模块进行增加tag和减少tag操作 5、在测试仪上观察接收到的8条上行业务流的流量分布情况
+
+调度模式：SP shaping流量: a 包长：64 1024 随机 流1的流量：a*25% 流2的流量：a*25% 流3的流量：a*25% 流4的流量：a*25% 流5的流量：a*25% 流6的流量：a*20% 流7的流量：a*15% 流8的流量：a*15%
+
+1、步骤5：总接收流量为a，流8-流4的流量完全通过，流3～流1的流量全部丢弃
+
+[TestLogicInfo]
+testClusterNames= IasGlobal/AsicQOSSceneTc
+productLib=
+toolLib=
+
+# 在TERM1控制台窗口上的建立/恢复配置命令/脚本 
+TERM1,SetupCommands=
+TERM1,RestoreCommands=
+TERM1,SetupScripts=
+
+[TestCaseData]
+FIELDS,      testCaseNo,        testClusters,      testCaseName,      	testCaseLevel,			args,
+1, QOS_07_040,  IasGlobal/AsicQOSSceneTc, 单tcont的SP调度-shaping, $chipVersion$execNetWorkQos0$caseLevel2, \
+-rate0 6250 \
+-StreamLoad " 25000 25000 25000 25000 25000 20000 15000 15000 " \
+-StreamLoad1 " 25000 25000 25000 25500 25000 20000 15000 15000 " \
+-vlanUp0 $oltCvlanId00 \
+-vlanUp1 $oltCvlanId01 \
+-vlanUp2 $oltCvlanId02 \
+-vlanUp3 $oltCvlanId03 \
+-vlanUp4 $oltCvlanId04 \
+-vlanUp5 $oltCvlanId05 \
+-vlanUp6 $oltCvlanId06 \
+-vlanUp7 $oltCvlanId07 \
+-vlanDown0 $oltSvlanId00 \
+-vlanDown1 $oltSvlanId01 \
+-vlanDown2 $oltSvlanId02 \
+-vlanDown3 $oltSvlanId03 \
+-vlanDown4 $oltSvlanId04 \
+-vlanDown5 $oltSvlanId05 \
+-vlanDown6 $oltSvlanId06 \
+-vlanDown7 $oltSvlanId07 \
+-egr $up_port_num \
+-rate1 6250  \
+-forwardPktNum " { -streamNO {3 4 5 6 7} -tsStreamNO {3 4 5 6 7} } " \
+-forwardPktNum1 " { -streamNO {3 4 5 6 7} -tsStreamNO {3 4 5 6 7} } " \
+-forwardMix0 "{-streamNO {{0 1 2 3 4 5 6 7  }} \
+              -tsStreamNO {{0 1 2 3 4 5 6 7  } } \
+              -checktype totalBps  \
+              -forwardValue {100} \
+             } \
+             {-streamNO {3 4 5 6 7} -tsStreamNO {3 4 5 6 7}   -checktype bps -forwardValue {25 25 20 15 15} } \
+             {-streamNO {0 1 2} -tsStreamNO {0 1 2}   -checktype bps -forwardValue {0 0 0} } \
+             " \
+-forwardMix1 "{-streamNO {{0 1 2 3 4 5 6 7  }} \
+              -tsStreamNO {{0 1 2 3 4 5 6 7  } } \
+              -checktype totalBps  \
+              -forwardValue {100} \
+             } \
+             {-streamNO {3 4 5 6 7} -tsStreamNO {3 4 5 6 7}   -checktype bps -forwardValue {25 25 20 15 15} } \
+             {-streamNO {0 1 2} -tsStreamNO {0 1 2}   -checktype bps -forwardValue {0 0 0} } \
+             " \
+-forwardMix2 "{-streamNO {{0 1 2 3 4 5 6 7  }} \
+              -tsStreamNO {{0 1 2 3 4 5 6 7  } } \
+              -checktype totalBps  \
+              -forwardValue {100} \
+             } \
+             {-streamNO {3 4 5 6 7} -tsStreamNO {3 4 5 6 7}   -checktype bps -forwardValue {25 25 20 15 15} } \
+             {-streamNO {0 1 2} -tsStreamNO {0 1 2}   -checktype bps -forwardValue {0 0 0} } \
+             " \
+-sentWaitTime 0 \
+,
+
+#*********************本用例调试不通过是因为版本缓存配置不支持***************************************
+
+#1、按照样本点要求，为T-CONT分配DBA带宽；
+#   为ONT添加8个Gemport，8个gemport进同一个tcont； 
+#2、使用测试仪发送8条下行背景流量，满流量发送，每条流流量均分，优先级覆盖0-7；
+#3、使用测试仪发送8条上行业务流，报文长度覆盖样本点；
+#4、在测试仪上观察接收到的8条上行业务流的流量分布情况
+
+#待测T-CONT：T-CONT1
+#T-CONT 1分配的DBA带宽：type2 a
+#包长：64 789 随机
+#以上包长分别对应流量：
+#每条流的流量：a*25%
+#每条流的流量：a*21%
+#每条流的流量：a*21%
+
+
+  
+#1、步骤７：总接收流量为a，
+#    流8-流5完全通过，
+#    流4通过大部分,固定包长， 用 GponTool.exe 工具计算出的值 减去流8到流5的流量； 
+#                    随机包长，可以在局端配置DBA，发一条流，随机包长，看实际流量，大致可以计算出来
+#    流3-流1全部丢弃；
+
+
+#逻辑编号:
+逻辑名称:二次入队_shaper
+逻辑说明:
+组网编号: 
+预置条件:
+测试步骤:
+
+0010. 清除统计信息:
+     CntAllClr (-TermName $term3);
+
+0020. 清除所有队列统计:
+     QosQueueCntAllClr (-TermName $term3); 
+     
+0030 清除ont本地arl表:
+	L2MacAllDel (-TermName $term3);
+
+0040 配置TCONT绑定模板 :
+	IasOntLineProfileAdd (-TermName $term1  -OntLineProfileType gpon  -ProfileId $ontLineProfileId); 
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId0  -DbaProfileId $dbaProfileId5);
+
+0080 配置通用调度器绑定shaper模板:
+   QosShtTableSet (-TermName $term3 -index 1 -xir $Data(rate0) -xbs 15625);
+   QosSsctTableSet (-TermName $term3 -index $tcont0_port_num -pir_shp_mnum 1 -sshp_mode 0);
+	
+
+0100 往测试队列发送报文，每条流的流量是a*25% :
+    QosCheckNoFullStremMixData ( \
+                        -TsuID $tsuID -StreamSum $streamSum -Speed 20 \
+	                    -SendPort $sendPort -StaPort $staPort -StatMode $statMode \
+	                    -Vlan "$Data(vlanUp0) $Data(vlanUp1) $Data(vlanUp2) $Data(vlanUp3) \
+	                           $Data(vlanUp4) $Data(vlanUp5) $Data(vlanUp6) $Data(vlanUp7) \
+                              " \
+	                    -Pri $port5_vlanPri -SMac $port5_sourceMAC -DMac $port5_destinationMAC \
+                        -SampleTimes $sampleTimes -PktLenList $pktLenList64 \
+                        -SaveCfgFile $saveCfgtoFile -StaItem $statItem \
+                        -StatIteStopStream $statIteStopStream \
+						-AllowError $allowErrorQOSbps \
+						-SentWaitTime $Data(sentWaitTime) \
+						-ForwardMix $Data(forwardMix0) \
+						-StreamLoad $Data(StreamLoad) \
+						-FitteryType FALSE \
+						-ForwardPktNum $Data(forwardPktNum)  \
+                        -DoubleSteam "TRUE" \
+                        -DoubleSteamVlan " $Data(vlanDown0) $Data(vlanDown1) $Data(vlanDown2) $Data(vlanDown3) \
+                                     $Data(vlanDown4) $Data(vlanDown5) $Data(vlanDown6) $Data(vlanDown7)  \
+                                    " \
+                        -SendType "DOUBLE" \
+                        -StaPortSpeed $fullSpeedPercent \
+                        );
+
+0110 往测试队列发送报文，每条流的流量是a*21% :
+    QosCheckNoFullStremMixData ( \
+                        -TsuID $tsuID -StreamSum $streamSum -Speed 16.8 \
+	                    -SendPort $sendPort -StaPort $staPort -StatMode $statMode \
+	                    -Vlan "$Data(vlanUp0) $Data(vlanUp1) $Data(vlanUp2) $Data(vlanUp3) \
+	                           $Data(vlanUp4) $Data(vlanUp5) $Data(vlanUp6) $Data(vlanUp7) \
+                              " \
+	                    -Pri $port5_vlanPri -SMac $port5_sourceMAC -DMac $port5_destinationMAC \
+                        -SampleTimes $sampleTimes -PktLenList $pktLenList789 \
+                        -SaveCfgFile $saveCfgtoFile -StaItem $statItem \
+                        -StatIteStopStream $statIteStopStream \
+						-AllowError $allowErrorQOSbps \
+						-SentWaitTime $Data(sentWaitTime) \
+						-ForwardMix $Data(forwardMix1) \
+						-StreamLoad $Data(StreamLoad) \
+						-FitteryType FALSE \
+						-ForwardPktNum $Data(forwardPktNum)  \
+                        -DoubleSteam "TRUE" \
+                        -DoubleSteamVlan " $Data(vlanDown0) $Data(vlanDown1) $Data(vlanDown2) $Data(vlanDown3) \
+                                     $Data(vlanDown4) $Data(vlanDown5) $Data(vlanDown6) $Data(vlanDown7)  \
+                                    " \
+                        -SendType "DOUBLE" \
+                        -StaPortSpeed $fullSpeedPercent \
+                        );
+
+0120 往测试队列发送报文，每条流的流量是a*21% :
+    QosCheckNoFullStremMixData ( \
+                        -TsuID $tsuID -StreamSum $streamSum -Speed 16.8 \
+	                    -SendPort $sendPort -StaPort $staPort -StatMode $statMode \
+	                    -Vlan "$Data(vlanUp0) $Data(vlanUp1) $Data(vlanUp2) $Data(vlanUp3) \
+	                           $Data(vlanUp4) $Data(vlanUp5) $Data(vlanUp6) $Data(vlanUp7) \
+                              " \
+	                    -Pri $port5_vlanPri -SMac $port5_sourceMAC -DMac $port5_destinationMAC \
+                        -SampleTimes $sampleTimes -PktLenList $pktLenList2000 \
+                        -SaveCfgFile $saveCfgtoFile -StaItem $statItem \
+                        -StatIteStopStream $statIteStopStream \
+						-AllowError $allowErrorQOSbps \
+						-SentWaitTime $Data(sentWaitTime) \
+						-ForwardMix $Data(forwardMix1) \
+						-StreamLoad $Data(StreamLoad) \
+						-FitteryType FALSE \
+						-ForwardPktNum $Data(forwardPktNum)  \
+                        -DoubleSteam "TRUE" \
+                        -DoubleSteamVlan " $Data(vlanDown0) $Data(vlanDown1) $Data(vlanDown2) $Data(vlanDown3) \
+                                     $Data(vlanDown4) $Data(vlanDown5) $Data(vlanDown6) $Data(vlanDown7)  \
+                                    " \
+                        -SendType "DOUBLE" \
+                        -StaPortSpeed $fullSpeedPercent \
+                        );
+                                                
+0130 往测试队列发送报文，每条流的流量是a*21% :
+    QosCheckNoFullStremMixData ( \
+                        -TsuID $tsuID -StreamSum $streamSum -Speed 16.8 \
+	                    -SendPort $sendPort -StaPort $staPort -StatMode $statMode \
+	                    -Vlan "$Data(vlanUp0) $Data(vlanUp1) $Data(vlanUp2) $Data(vlanUp3) \
+	                           $Data(vlanUp4) $Data(vlanUp5) $Data(vlanUp6) $Data(vlanUp7) \
+                              " \
+	                    -Pri $port5_vlanPri -SMac $port5_sourceMAC -DMac $port5_destinationMAC \
+                        -SampleTimes $sampleTimes -PktLenList $pktLenListRandom \
+                        -SaveCfgFile $saveCfgtoFile -StaItem $statItem \
+                        -StatIteStopStream $statIteStopStream \
+						-AllowError $allowErrorQOSbps \
+						-SentWaitTime $Data(sentWaitTime) \
+						-ForwardMix $Data(forwardMix2) \
+						-StreamLoad $Data(StreamLoad1) \
+						-FitteryType FALSE \
+						-ForwardPktNum $Data(forwardPktNum1)  \
+                        -DoubleSteam "TRUE" \
+                        -DoubleSteamVlan " $Data(vlanDown0) $Data(vlanDown1) $Data(vlanDown2) $Data(vlanDown3) \
+                                     $Data(vlanDown4) $Data(vlanDown5) $Data(vlanDown6) $Data(vlanDown7)  \
+                                    " \
+                        -SendType "DOUBLE" \
+                        -StaPortSpeed $fullSpeedPercent \
+                        );
+
+资源释放：
+
+
+010 延迟一段时间:
+    IasCommonDelay( -Time $waitTime);
+ 	    
+110 恢复TCONT绑定模板:
+	IasOntLineProfileAdd (-TermName $term1  -OntLineProfileType gpon  -ProfileId $ontLineProfileId);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId1  -DbaProfileId $dbaProfileId3);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId2  -DbaProfileId $dbaProfileId3);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId3  -DbaProfileId $dbaProfileId3);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId4  -DbaProfileId $dbaProfileId3);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId5  -DbaProfileId $dbaProfileId3);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId6  -DbaProfileId $dbaProfileId3);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId7  -DbaProfileId $dbaProfileId3);
+	IasNewModeOntTcontBind (-TermName $term1  -ProfileId $ontLineProfileId  -TcontId $tcontId0  -DbaProfileId $dbaProfileId);
+
+100 恢复通用调度器绑定shaper模板:
+	QosSsctTableSet (-TermName $term3 -index $tcont0_port_num -pir_shp_mnum 0 -sshp_mode 0);
+
+234.停流:
+    QosTsuRemoveStream (-TsuID $tsuID -Port $sendPort);
