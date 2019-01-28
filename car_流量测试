@@ -1,0 +1,407 @@
+[TestLogicInfo]
+testClusterNames= IasGlobal/AsicQOSTc
+productLib=
+toolLib=
+
+ 在TERM1控制台窗口上的建立/恢复配置命令/脚本 
+TERM1,SetupCommands=
+TERM1,RestoreCommands=
+TERM1,SetupScripts=
+
+set excelPath $::Global::gaTestLogicInfo(currentTestLogicPath)
+if  {"08" == $chipVersion} { 
+    set excelFileName $excelPath/流量测试18.xlsx
+} else {
+    set excelFileName $excelPath/流量测试.xlsx
+}
+
+[TestCaseData]
+FIELDS,      testCaseNo,        testClusters,      testCaseName,      	testCaseLevel,			args,    
+1, QOS_Car_01_010,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_010 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+2, QOS_Car_01_020,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel0, \
+-testNo QOS_06_01_020 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+3, QOS_Car_01_030,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_030 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+4, QOS_Car_01_040,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_040 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+5, QOS_Car_01_050,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel0, \
+-testNo QOS_06_01_050 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+6, QOS_Car_01_060,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_060 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+7, QOS_Car_01_070,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_070 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+8, QOS_Car_01_080,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel1, \
+-testNo QOS_06_01_080 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+9, QOS_Car_01_090,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_090 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+         
+10, QOS_Car_01_100,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_100 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+11, QOS_Car_01_110,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel1, \
+-testNo QOS_06_01_110 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+12, QOS_Car_01_120,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_120 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+13, QOS_Car_01_130,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_130 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+14, QOS_Car_01_140,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel0, \
+-testNo QOS_06_01_140 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+15, QOS_Car_01_150,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_150 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+16, QOS_Car_01_160,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_160 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+17, QOS_Car_01_170,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel1, \
+-testNo QOS_06_01_170 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+18, QOS_Car_01_180,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_180 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+19, QOS_Car_01_190,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_190 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+20, QOS_Car_01_200,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel1, \
+-testNo QOS_06_01_200 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+21, QOS_Car_01_210,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_210 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+22, QOS_Car_01_220,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_220 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+23, QOS_Car_01_230,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel0, \
+-testNo QOS_06_01_230 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+24, QOS_Car_01_240,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_240 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+25, QOS_Car_01_250,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_250 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+26, QOS_Car_01_260,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel1, \
+-testNo QOS_06_01_260 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+27, QOS_Car_01_270,  IasGlobal/AsicQOSTc, 先过P桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_270 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+28, QOS_Car_01_280,  IasGlobal/AsicQOSTc, 先过C桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_280 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num , 
+
+29, QOS_Car_01_290,  IasGlobal/AsicQOSTc, 先过C桶_bps, $chipVersion$execNetWorkQos0$caseLevel0, \
+-testNo QOS_06_01_290 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+30, QOS_Car_01_300,  IasGlobal/AsicQOSTc, 先过C桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_300 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+31, QOS_Car_01_310,  IasGlobal/AsicQOSTc, 先过C桶_bps, $chipVersion$execNetWorkQos0$caseLevel0, \
+-testNo QOS_06_01_310 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+32, QOS_Car_01_320,  IasGlobal/AsicQOSTc, 先过C桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_320 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+33, QOS_Car_01_330,  IasGlobal/AsicQOSTc, 先过C桶_bps, $chipVersion$execNetWorkQos0$caseLevel1, \
+-testNo QOS_06_01_330 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+34, QOS_Car_01_340,  IasGlobal/AsicQOSTc, 先过C桶_bps, $chipVersion$execNetWorkQos0$caseLevel1, \
+-testNo QOS_06_01_340 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+35, QOS_Car_01_350,  IasGlobal/AsicQOSTc, 先过C桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_350 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+36, QOS_Car_01_360,  IasGlobal/AsicQOSTc, 先过C桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_360 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+37, QOS_Car_01_370,  IasGlobal/AsicQOSTc, 先过C桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_370 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+38, QOS_Car_01_380,  IasGlobal/AsicQOSTc, 先过C桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_380 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+39, QOS_Car_01_390,  IasGlobal/AsicQOSTc, 先过C桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_390 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+40, QOS_Car_01_400,  IasGlobal/AsicQOSTc, 先过C桶_bps, $chipVersion$execNetWorkQos0$caseLevel0, \
+-testNo QOS_06_01_400 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+41, QOS_Car_01_410,  IasGlobal/AsicQOSTc, 先过C桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_410 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+42, QOS_Car_01_420,  IasGlobal/AsicQOSTc, 先过C桶_bps, $chipVersion$execNetWorkQos0$caseLevel1, \
+-testNo QOS_06_01_420 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+43, QOS_Car_01_430,  IasGlobal/AsicQOSTc, 先过C桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_430 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+44, QOS_Car_01_440,  IasGlobal/AsicQOSTc, 先过C桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_440 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+45, QOS_Car_01_450,  IasGlobal/AsicQOSTc, 先过C桶_bps, $chipVersion$execNetWorkQos0$caseLevel1, \
+-testNo QOS_06_01_450 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+46, QOS_Car_01_460,  IasGlobal/AsicQOSTc, 先过C桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_460 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+47, QOS_Car_01_470,  IasGlobal/AsicQOSTc, 先过C桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_470 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+48, QOS_Car_01_480,  IasGlobal/AsicQOSTc, 先过C桶_bps, $chipVersion$execNetWorkQos0$caseLevel0, \
+-testNo QOS_06_01_480 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num , 
+
+49, QOS_Car_01_490,  IasGlobal/AsicQOSTc, 先过C桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_490 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+50, QOS_Car_01_500,  IasGlobal/AsicQOSTc, 先过C桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_500 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+51, QOS_Car_01_510,  IasGlobal/AsicQOSTc, 先过C桶_bps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_510 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+52, QOS_Car_01_520,  IasGlobal/AsicQOSTc, 先过P桶_pps, $chipVersion$execNetWorkQos0$caseLevel0, \
+-testNo QOS_06_01_520 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+53, QOS_Car_01_530,  IasGlobal/AsicQOSTc, 先过P桶_pps, $chipVersion$execNetWorkQos0$caseLevel0, \
+-testNo QOS_06_01_530 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+54, QOS_Car_01_540,  IasGlobal/AsicQOSTc, 先过P桶_pps, $chipVersion$execNetWorkQos0$caseLevel1, \
+-testNo QOS_06_01_540 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+55, QOS_Car_01_550,  IasGlobal/AsicQOSTc, 先过C桶_pps, $chipVersion$execNetWorkQos0$caseLevel1, \
+-testNo QOS_06_01_550 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+56, QOS_Car_01_560,  IasGlobal/AsicQOSTc, 先过C桶_pps, $chipVersion$execNetWorkQos0$caseLevel0, \
+-testNo QOS_06_01_560 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+57, QOS_Car_01_570,  IasGlobal/AsicQOSTc, 先过C桶_pps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_570 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+58, QOS_Car_01_580,  IasGlobal/AsicQOSTc, 先过C桶_pps, $chipVersion$execNetWorkQos0$caseLevel2, \
+-testNo QOS_06_01_580 \
+-FilePath $excelFileName \
+-sfc_id 0 -car_en 1 -valid 1 \
+-vlan $oltCvlanId -egr $up_port_num ,
+
+#逻辑编号:  QOS_06 ;
+#逻辑名称:  流量测试 ;
+#逻辑说明:   CAR 流量测试 ;
+#组网编号:   不区分组网图 ;
+#预置条件:
+#测试步骤:
+
+020.清除统计信息:
+    CntAllClr (-TermName $term3);
+     
+030.清除ont本地arl表:
+	L2MacAllDel (-TermName $term3);
+
+050.配置vlan广播表:
+ 	L2BcSet (-TermName $term3 -vlan $Data(vlan) -egr $Data(egr));
+  
+120.根据 excel 输入值进行用例测试:
+	CarTestByExcel(-TermName $term3 -ExcelFile $Data(FilePath) -SheetName car -TestNo $Data(testNo) \
+	               -sfc_id $Data(sfc_id) -car_en $Data(car_en) -valid $Data(valid) \
+	               -egr $Data(egr) \
+               	   -TsuID $tsuID -StreamSum 1 -Speed $speedPercent \
+                   -SendPort $sendPort -StaPort $staPort -StatMode $statMode \
+                   -Vlan $Data(vlan) -Pri $port5_vlanPri \
+                   -SMac $port5_sourceMAC -DMac $port5_destinationMAC -PktLen $CAR_pktLenRandom \
+                   -StaItem $statItem -SaveCfgFile $saveCfgtoFile \
+                   -SampleTimes $sampleTimesCAR \
+                   -StaItem $statIteStopStream \
+                   -AllowErrorCARbps $allowErrorCARbps -AllowErrorCARpps $allowErrorCARpps \
+                  );
+
+资源释放：
+
+010 延迟一段时间:      
+    IasCommonDelay( -Time $waitTime);
+
+030 删除vlan广播表:
+    L2BcAllDel (-TermName $term3 -vlan $Data(vlan));
+
+234.停流:
+    QosTsuRemoveStream (-TsuID $tsuID);
