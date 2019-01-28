@@ -1,0 +1,122 @@
+1、按照组网图建立拓扑结构 2、配置8条队列shaper使能，调整因子均为正向24，分别绑定8个shaper模板；其余通用调度器和端口调度器均不使能shaper（绑定模板0） 3、同时往8条队列各发送125M流量，同时往另一个逻辑端口发送一个背景流 4、观察各条队列的流量
+
+被测逻辑端口：tcont0 背景流逻辑端口：ge0 发送包长：64,2000，64~2000随机 shaper模板参数： 模板id：0 cir:1，cbs:4096 模板id：1 cir:1，cbs:4096 模板id：2 cir:4，cbs:4096 模板id：3 cir:64，cbs:4096 模板id：4 cir:128，cbs:4096 模板id：5 cir:640，cbs:4096 模板id：6 cir:1280，cbs:4096 模板id：7 cir:3200，cbs:4096 模板id：8 cir:6400，cbs:4096
+
+1、步骤4，各队列收到的流量如下： 队列0:16kbps 队列1:64kbps 队列2:1Mbps 队列3:2Mbps 队列4:10Mbps 队列5:20Mbps 队列6:50Mbps 队列7:100Mbps
+
+[TestLogicInfo]
+testClusterNames= IasGlobal/AsicQOSTc
+productLib=
+toolLib=
+
+# 在TERM1控制台窗口上的建立/恢复配置命令/脚本 
+TERM1,SetupCommands=
+TERM1,RestoreCommands=
+TERM1,SetupScripts=
+
+[TestCaseData]
+FIELDS,      testCaseNo,        testClusters,      testCaseName,      	testCaseLevel,			args,    
+1, QOS_Shaper_02_010,  IasGlobal/AsicQOSTc, 队列shaper_bps, $chipVersion$execNetWorkQos0$caseLevel0, \
+-vlan $oltCvlanId -egr $up_port_num \
+-Qid0 [lindex $queuestruc(tcont0) $pri0] -index0 17 \
+-Qid1 [lindex $queuestruc(tcont0) $pri1] -index1 18 \
+-Qid2 [lindex $queuestruc(tcont0) $pri2] -index2 19 \
+-Qid3 [lindex $queuestruc(tcont0) $pri3] -index3 20 \
+-Qid4 [lindex $queuestruc(tcont0) $pri4] -index4 21 \
+-Qid5 [lindex $queuestruc(tcont0) $pri5] -index5 22 \
+-Qid6 [lindex $queuestruc(tcont0) $pri6] -index6 23 \
+-Qid7 [lindex $queuestruc(tcont0) $pri7] -index7 24 \
+-shape_mode 0 \
+-xir0 100 -xir1 40 -xir2 62 -xir3 125 -xir4 625 -xir5 1250 -xir6 3125 -xir7 6250 \
+-forwardMix  " {-streamNO {0 1 2 3 4 5 6 7} -tsStreamNO {0 1 2 3 4 5 6 7} -checktype bps \
+                 -forwardValue { [expr 1600 / 1000.0] [expr 640 / 1000.0] [expr 992.0 / 1000.0] \
+                                 2 10 20 50 100 } } \
+              " \
+,
+
+
+#逻辑编号:
+逻辑名称:队列shaper_bps
+逻辑说明:
+组网编号: 
+预置条件:
+测试步骤:
+
+010. 清除统计信息:
+     CntAllClr (-TermName $term3);
+
+020. 清除所有队列统计:
+     QosQueueCntAllClr (-TermName $term3); 
+     
+030 清除ont本地arl表:
+	L2MacAllDel (-TermName $term3);
+
+040 配置端口加入vlan:
+ 	L2BcSet (-TermName $term3 -vlan $Data(vlan) -user_vlan $Data(vlan) -egr $Data(egr));  	
+
+########050 配置端口下的队列shaper:
+######## 	QosSchSet (-TermName $term3 -egr $tcont0_port_num_sdk -member_id 0 -member_shapping_en 1 -member_rate $Data(rate0)); 
+######## 	QosSchSet (-TermName $term3 -egr $tcont0_port_num_sdk -member_id 1 -member_shapping_en 1 -member_rate $Data(rate1));
+######## 	QosSchSet (-TermName $term3 -egr $tcont0_port_num_sdk -member_id 2 -member_shapping_en 1 -member_rate $Data(rate2));
+######## 	QosSchSet (-TermName $term3 -egr $tcont0_port_num_sdk -member_id 3 -member_shapping_en 1 -member_rate $Data(rate3));
+######## 	QosSchSet (-TermName $term3 -egr $tcont0_port_num_sdk -member_id 4 -member_shapping_en 1 -member_rate $Data(rate4));
+######## 	QosSchSet (-TermName $term3 -egr $tcont0_port_num_sdk -member_id 5 -member_shapping_en 1 -member_rate $Data(rate5));
+######## 	QosSchSet (-TermName $term3 -egr $tcont0_port_num_sdk -member_id 6 -member_shapping_en 1 -member_rate $Data(rate6));
+######## 	QosSchSet (-TermName $term3 -egr $tcont0_port_num_sdk -member_id 7 -member_shapping_en 1 -member_rate $Data(rate7));  
+
+   050 配置队列shaper模板:
+    QosShtTableSet (-TermName $term3 -index $Data(index0) -xir $Data(xir0) -xbs $xbs); 
+    QosShtTableSet (-TermName $term3 -index $Data(index1) -xir $Data(xir1) -xbs $xbs); 
+    QosShtTableSet (-TermName $term3 -index $Data(index2) -xir $Data(xir2) -xbs $xbs); 
+    QosShtTableSet (-TermName $term3 -index $Data(index3) -xir $Data(xir3) -xbs $xbs); 
+    QosShtTableSet (-TermName $term3 -index $Data(index4) -xir $Data(xir4) -xbs $xbs); 
+    QosShtTableSet (-TermName $term3 -index $Data(index5) -xir $Data(xir5) -xbs $xbs); 
+    QosShtTableSet (-TermName $term3 -index $Data(index6) -xir $Data(xir6) -xbs $xbs); 
+    QosShtTableSet (-TermName $term3 -index $Data(index7) -xir $Data(xir7) -xbs $xbs); 
+    
+   060 配置队列绑定shaper模板:
+ 	QosQsctTableSet (-TermName $term3 -index $Data(Qid0) -pir_shp_mnum $Data(index0) -qshp_mode $Data(shape_mode));
+ 	QosQsctTableSet (-TermName $term3 -index $Data(Qid1) -pir_shp_mnum $Data(index1) -qshp_mode $Data(shape_mode));
+ 	QosQsctTableSet (-TermName $term3 -index $Data(Qid2) -pir_shp_mnum $Data(index2) -qshp_mode $Data(shape_mode));
+ 	QosQsctTableSet (-TermName $term3 -index $Data(Qid3) -pir_shp_mnum $Data(index3) -qshp_mode $Data(shape_mode));
+ 	QosQsctTableSet (-TermName $term3 -index $Data(Qid4) -pir_shp_mnum $Data(index4) -qshp_mode $Data(shape_mode));
+ 	QosQsctTableSet (-TermName $term3 -index $Data(Qid5) -pir_shp_mnum $Data(index5) -qshp_mode $Data(shape_mode));
+ 	QosQsctTableSet (-TermName $term3 -index $Data(Qid6) -pir_shp_mnum $Data(index6) -qshp_mode $Data(shape_mode));
+ 	QosQsctTableSet (-TermName $term3 -index $Data(Qid7) -pir_shp_mnum $Data(index7) -qshp_mode $Data(shape_mode));
+     
+100 往测试队列发送报文:
+    QosCheckNoFullStremMixData ( \
+                        -OltSvlanId $oltSvlanId -BlackStreamFlg $blackStreamFlg \
+                        -TsuID $tsuID -StreamSum $streamSum \
+	                    -SendPort $sendPort -StaPort $staPort -StatMode $statMode -Vlan $Data(vlan) \
+	                    -Pri $port5_vlanPri -SMac $port5_sourceMAC -DMac $port5_destinationMAC \
+                        -SampleTimes $sampleTimes -PktLenList $pktLenListRandom \
+                        -SaveCfgFile $saveCfgtoFile -StaItem $statItem \
+                        -StatIteStopStream $statIteStopStream \
+						-AllowError $allowErrorQOSbps \
+						-ForwardMix $Data(forwardMix) \
+						-AllowErrorFittery $allowErrorFittery \
+                        );
+	
+
+资源释放：
+
+010 取消端口下的队列shaper:
+ 	QosQsctTableSet (-TermName $term3 -index $Data(Qid0) -pir_shp_mnum 0 -qshp_mode $Data(shape_mode));
+ 	QosQsctTableSet (-TermName $term3 -index $Data(Qid1) -pir_shp_mnum 0 -qshp_mode $Data(shape_mode));
+ 	QosQsctTableSet (-TermName $term3 -index $Data(Qid2) -pir_shp_mnum 0 -qshp_mode $Data(shape_mode));
+ 	QosQsctTableSet (-TermName $term3 -index $Data(Qid3) -pir_shp_mnum 0 -qshp_mode $Data(shape_mode));
+ 	QosQsctTableSet (-TermName $term3 -index $Data(Qid4) -pir_shp_mnum 0 -qshp_mode $Data(shape_mode));
+ 	QosQsctTableSet (-TermName $term3 -index $Data(Qid5) -pir_shp_mnum 0 -qshp_mode $Data(shape_mode));
+ 	QosQsctTableSet (-TermName $term3 -index $Data(Qid6) -pir_shp_mnum 0 -qshp_mode $Data(shape_mode));
+ 	QosQsctTableSet (-TermName $term3 -index $Data(Qid7) -pir_shp_mnum 0 -qshp_mode $Data(shape_mode));
+    
+020 延迟一段时间:
+    IasCommonDelay( -Time $waitTime);
+    
+030 删除端口加入vlan:
+ 	L2BcAllDel (-TermName $term3 -vlan $Data(vlan));
+
+234.停流:
+    QosTsuRemoveStream (-TsuID $tsuID);
+    AsicCurCfgGet (-TermName $term3 );
