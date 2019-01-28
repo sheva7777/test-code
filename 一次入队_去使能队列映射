@@ -1,0 +1,97 @@
+1、选择一次入队优先级为内部优先级 2、配置IFC规则选择内部优先级为外层优先级 3、去使能被测队列映射 4、使用测试仪发送匹配IFC规则的数据报文，观察数据报文转发是否符合预期 5、查询丢包原因是否符合预期 6、使能被测队列映射 7、使用测试仪发送匹配IFC规则的数据报文，观察数据报文转发是否符合预期 8、查询入队统计
+报文外层的优先级：6
+
+1、步骤4，数据报文被丢弃 2、步骤5，报文丢弃原因为"QID查找失败" 3、步骤7，数据报文正常转发 4、步骤8，入队优先级使用优先级为6
+
+[TestLogicInfo]
+testClusterNames= IasGlobal/AsicQOSTc
+productLib=
+toolLib=
+
+# 在TERM1控制台窗口上的建立/恢复配置命令/脚本 
+TERM1,SetupCommands=
+TERM1,RestoreCommands=
+TERM1,SetupScripts=
+
+[TestCaseData]
+FIELDS,      testCaseNo,        testClusters,      testCaseName,      	testCaseLevel,			args,    
+1, QOS_Queue_05_040,  IasGlobal/AsicQOSTc, ifc内部优先级使用外层优先级, $chipVersion$execNetWorkQos0$caseLevel1, \
+-ifcid 0 -igrs 0xffff -cnt_en 1 \
+-trans_act 4 -trans_egrs $up_port_bitmap -pq_mode 2 -pq 0 \
+-egr $tcont0_port_num_sdk -pri 6 -En 1 \
+-igr $eth_port_num -CmplistDorpReason {-Name rsv -Value 0} \
+-Port $tcont0_port_num_sdk -CmpList {-Pri 6 -In 200 } -Rtn Suc020 \
+-tStep_SendPort {{-Port 1/$tsgEth0Port -SendMode SINGLE_BURST -BurPacket 200 -Speed 10}} \
+-tStep_Stream { \
+{-StreamName queueTest -Port 1/$tsgEth0Port -StaPort 1/$tsgUpPort -Length 788 -DMac $MacPon -SMac $MacEth -IpEdition IPv4 -SIp 192.168.0.3 -DIp 192.165.1.1 -Vlan $oltCvlanId -Pri 6 } \
+} \
+-tStep_Expect_Stat_Tsu {-FinalStat { \
+	{{-StreamName queueTest -Port 1/$tsgEth0Port -StaPort 1/$tsgUpPort -Expect {{PS_RX_STREAM_PACKETS=PS_TX_STREAM_PACKETS}}}} \
+} } \
+,
+
+#5116H/K的一次入队和二次入队的“表项有效”位是给软件看的（寄存器0x12442800），实际对业务不起作用，即默认有效，不可配置成无效。5117P/V （寄存器0x12442800）才是有效的
+#2, QOS_Queue_05_040%1,  IasGlobal/AsicQOSTc, ifc内部优先级使用外层优先级, $chipVersion$execNetWorkQos0$caseLevel1, \
+#-ifcid 0 -igrs 0xffff -cnt_en 1 \
+#-trans_act 4 -trans_egrs $up_port_bitmap -pq_mode 2 -pq 0 \
+#-egr $tcont0_port_num_sdk -pri 6 -En 0 \
+#-igr $eth_port_num -CmplistDorpReason {-Name reserved -Value 200} \
+#-Port $tcont0_port_num_sdk -CmpList {-Pri 6 -In 200 } -Rtn Err020 \
+#-tStep_SendPort {{-Port 1/$tsgEth0Port -SendMode SINGLE_BURST -BurPacket 200 -Speed 10}} \
+#-tStep_Stream { \
+#{-StreamName queueTest -Port 1/$tsgEth0Port -StaPort 1/$tsgUpPort -Length 788 -DMac $MacPon -SMac $MacEth -IpEdition IPv4 -SIp 192.168.0.3 -DIp 192.165.1.1 -Vlan $oltCvlanId -Pri 6 } \
+#} \
+#-tStep_Expect_Stat_Tsu {-FinalStat { \
+#	{{-StreamName queueTest -Port 1/$tsgEth0Port -StaPort 1/$tsgUpPort -Expect {{PS_RX_STREAM_PACKETS=0}}}} \
+#} } \
+#,
+
+
+
+#逻辑编号:
+逻辑名称:一次入队_去使能队列映射
+逻辑说明:
+组网编号: 
+预置条件:
+测试步骤:
+
+010.清除统计信息:
+    CntAllClr (-TermName $term3);
+    QosQueueCntAllClr (-TermName $term3); 
+	L2MacAllDel (-TermName $term3);
+
+020 配置ifc规则修改报文的外层优先级_选择内部优先级为外层优先级并转发到出端口:
+	IfcSetExt (-TermName $term3 -id $Data(ifcid) -valid 1 -eof 1 -igrs $Data(igrs) -cnt_en $Data(cnt_en) -trans_act $Data(trans_act) \
+	           -trans_egrs $Data(trans_egrs) -pri_sel $Data(pq_mode));
+
+030 使能去使能队列映射，不修改队列调度:
+#	QosGmapSetExt (-TermName $term3 -egr $Data(egr) -pq $Data(pri) -valid $Data(En) );
+	QosGmapTableSetOrg ( -TermName $term3 -type tcont -mask 0x1 -pq $Data(pri));
+	
+040.测试仪发送数据报文并判断报文统计:
+	AsicHiTrafficAnalysisFunctionTest( -ListStream $Data(tStep_Stream) \
+					-ListPort $Data(tStep_SendPort) \
+					-TimeDuration 10 \
+					-Expect $Data(tStep_Expect_Stat_Tsu) \
+					-StatMode bystream \
+					); 
+
+045 查看入队情况:
+    QosQueueCntAllGet(-TermName $term3);
+    
+050 查看入队情况:
+    QosPortCntGet(-TermName $term3 -Port $Data(Port) -CmpList $Data(CmpList)) = $Data(Rtn);
+
+060 查看丢弃原因:
+    QosDropReasonGet (-TermName $term3 -igr $Data(igr) -Cmplist $Data(CmplistDorpReason)); 
+
+资源释放：
+
+010 延迟一段时间:
+    IasCommonDelay( -Time 5);
+    
+020 删除ifc规则:    
+    IfcDelExt (-TermName $term3 -begin 0 -end max);
+
+030 使能去使能队列映射:
+	QosQueueEgrPqMapClr ( -TermName $term3 -type tcont -mask 0x1 -pq $Data(pri));
