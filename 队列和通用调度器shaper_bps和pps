@@ -1,0 +1,181 @@
+1、按照组网图建立拓扑结构 2、配置队列0 bps shaper，通用调度器0 pps shaper，队列4 pps shaper，通用调度器1 bps shaper，队列3 bps shaper，队列7 pps shaper，分别绑定6个shaper模板；所有队列的调整因子均为正向24 3、往队列0,3,4~7分别发包，流量比shaper流量大，同时往另一个逻辑端口发送一个背景流 4、观察各条队列的流量
+
+被测逻辑端口：ge0 背景流逻辑端口：tcont0 发送包长：64,2000，64~2000随机 队列0 shaper模板参数： 模板id：9 cir:6400，cbs:4096 通用调度器0 shaper模板参数： 模板id：10 cir:1000，cbs:4096 队列4 shaper模板参数： 模板id：11 cir:10000，cbs:4096 通用调度器1 shaper模板参数： 模板id：12 cir:64，cbs:4096 队列3 shaper模板参数： 模板id：13 cir:320，cbs:4096 队列7 shaper模板参数： 模板id：14 cir:3000，cbs:4096
+
+1、步骤4，各队列收到的流量如下： 队列0:1000pps 队列4:1Mbps 队列3:5Mbps 队列7:3000pps 队列5:发送的流量 队列6:发送的流量
+
+[TestLogicInfo]
+testClusterNames= IasGlobal/AsicQOSTc
+productLib=
+toolLib=
+
+# 在TERM1控制台窗口上的建立/恢复配置命令/脚本 
+TERM1,SetupCommands=
+TERM1,RestoreCommands=
+TERM1,SetupScripts=
+
+[TestCaseData]
+FIELDS,      testCaseNo,        testClusters,      testCaseName,      	testCaseLevel,			args,    
+1, QOS_Shaper_05_020,  IasGlobal/AsicQOSTc, 队列和通用调度器shaper_bps和pps, $chipVersion$execNetWorkQos0$caseLevel0, \
+-vlan $oltCvlanId -egr $up_port_num -sshp_mode0 0 -qshp_mode0 0 -sshp_mode1 1 -qshp_mode1 1 \
+-index0 9 -index1 10 -index2 11 -index3 12 -index4 13 -index5 14 \
+-xir0 6400  -xbs0 $xbs   -xir1 1000  -xbs1 $xbs \
+-xir2 10000 -xbs2 $xbs   -xir3 62    -xbs3 $xbs \
+-xir4 312   -xbs4 $xbs   -xir5 3000  -xbs5 $xbs \
+-forwardbps {false 992 4992 false 150000 150000} \
+-forwardpps {1000 false false 3000 false false} \
+-pri { 0 2 4 5 6 7 } \
+-streamNum 6 \
+-speedPercent 90 \
+,
+
+
+
+#逻辑编号:
+逻辑名称:队列和通用调度器shaper_bps和pps
+逻辑说明:
+组网编号: 
+预置条件:
+测试步骤:
+
+020. 清除统计信息:
+     CntAllClr (-TermName $term3);
+
+020. 清除所有队列统计:
+     QosQueueCntAllClr (-TermName $term3); 
+     
+030 清除ont本地arl表:
+	L2MacAllDel (-TermName $term3);
+
+050 配置端口加入vlan:
+ 	L2BcSet (-TermName $term3 -vlan $Data(vlan) -user_vlan $Data(vlan) -egr $Data(egr));
+ 	
+050 把队列从父调度器(逻辑端口)中删除:
+ 	QosQueueFromSchDel (-TermName $term3 -qid [lindex $ShaTcont0Queues 0]);
+ 	QosQueueFromSchDel (-TermName $term3 -qid [lindex $ShaTcont0Queues 1]);
+ 	QosQueueFromSchDel (-TermName $term3 -qid [lindex $ShaTcont0Queues 2]);
+ 	QosQueueFromSchDel (-TermName $term3 -qid [lindex $ShaTcont0Queues 3]);
+ 	QosQueueFromSchDel (-TermName $term3 -qid [lindex $ShaTcont0Queues 4]);
+ 	QosQueueFromSchDel (-TermName $term3 -qid [lindex $ShaTcont0Queues 5]);
+ 	QosQueueFromSchDel (-TermName $term3 -qid [lindex $ShaTcont0Queues 6]);
+ 	
+050 把子调度器挂到父调度器(逻辑端口)上:
+ 	QosSchToSchAdd (-TermName $term3 -id_parent $tcont0_port_num -id_child $free_sch_num0 -pri 0 -logic 1);
+ 	QosSchToSchAdd (-TermName $term3 -id_parent $tcont0_port_num -id_child $free_sch_num1 -pri 1 -logic 1);
+ 	QosSchToSchAdd (-TermName $term3 -id_parent $tcont0_port_num -id_child $free_sch_num2 -pri 2 -logic 1);
+
+050 把队列挂到子调度器上:
+ 	QosQueueToSchAdd (-TermName $term3 -schid $free_sch_num0 -qid [lindex $ShaTcont0Queues 0] -pri 0 -logic 0);
+ 	QosQueueToSchAdd (-TermName $term3 -schid $free_sch_num0 -qid [lindex $ShaTcont0Queues 1] -pri 1 -logic 0);
+ 	QosQueueToSchAdd (-TermName $term3 -schid $free_sch_num1 -qid [lindex $ShaTcont0Queues 2] -pri 0 -logic 0);
+ 	QosQueueToSchAdd (-TermName $term3 -schid $free_sch_num1 -qid [lindex $ShaTcont0Queues 3] -pri 1 -logic 0);
+ 	QosQueueToSchAdd (-TermName $term3 -schid $free_sch_num2 -qid [lindex $ShaTcont0Queues 4] -pri 0 -logic 0);
+ 	QosQueueToSchAdd (-TermName $term3 -schid $free_sch_num2 -qid [lindex $ShaTcont0Queues 5] -pri 1 -logic 0);
+ 	QosQueueToSchAdd (-TermName $term3 -schid $free_sch_num2 -qid [lindex $ShaTcont0Queues 6] -pri 2 -logic 0);
+ 	
+050 配置shaper模板:
+    QosShtTableSet (-TermName $term3 -index $Data(index0) -xir $Data(xir0) -xbs $Data(xbs0));
+    QosShtTableSet (-TermName $term3 -index $Data(index1) -xir $Data(xir1) -xbs $Data(xbs1));
+    QosShtTableSet (-TermName $term3 -index $Data(index2) -xir $Data(xir2) -xbs $Data(xbs2));
+    QosShtTableSet (-TermName $term3 -index $Data(index3) -xir $Data(xir3) -xbs $Data(xbs3));
+    QosShtTableSet (-TermName $term3 -index $Data(index4) -xir $Data(xir4) -xbs $Data(xbs4));
+    QosShtTableSet (-TermName $term3 -index $Data(index5) -xir $Data(xir5) -xbs $Data(xbs5));
+
+050 配置通用调度器绑定shaper模板:
+ 	QosSsctTableSet (-TermName $term3 -index $free_sch_num0 -pir_shp_mnum $Data(index1) -sshp_mode $Data(sshp_mode1));
+ 	QosSsctTableSet (-TermName $term3 -index $free_sch_num1 -pir_shp_mnum $Data(index3) -sshp_mode $Data(sshp_mode0));
+
+050 配置队列绑定shaper模板:
+ 	QosQsctTableSet (-TermName $term3 -index [lindex $ShaTcont0Queues 0] -pir_shp_mnum $Data(index0) -qshp_mode $Data(qshp_mode0));
+ 	QosQsctTableSet (-TermName $term3 -index [lindex $ShaTcont0Queues 2] -pir_shp_mnum $Data(index2) -qshp_mode $Data(qshp_mode1));
+ 	QosQsctTableSet (-TermName $term3 -index [lindex $ShaTcont0Queues 4] -pir_shp_mnum $Data(index4) -qshp_mode $Data(qshp_mode0));
+ 	QosQsctTableSet (-TermName $term3 -index [lindex $ShaTcont0Queues 5] -pir_shp_mnum $Data(index5) -qshp_mode $Data(qshp_mode1));
+ 	
+ 	
+60 修改队列间的调度关系:
+    QosGssaTableSet (-TermName $term3 -index $tcont0_port_num -eqm_chid 0);
+ 	QosGssaTableSet (-TermName $term3 -index $free_sch_num0 -eqm_chid 0);
+ 	QosGssaTableSet (-TermName $term3 -index $free_sch_num1 -eqm_chid 0);
+ 	QosGssaTableSet (-TermName $term3 -index $free_sch_num2 -eqm_chid 0);
+ 	QosGssaTableSet (-TermName $term3 -index $free_sch_num3 -eqm_chid 0);
+ 	QosGssaTableSet (-TermName $term3 -index $free_sch_num4 -eqm_chid 0);
+ 	QosGssaTableSet (-TermName $term3 -index $free_sch_num5 -eqm_chid 0);
+ 	QosGssaTableSet (-TermName $term3 -index $free_sch_num6 -eqm_chid 0);
+ 	QosGssaTableSet (-TermName $term3 -index $free_sch_num7 -eqm_chid 0);
+     
+130 往测试队列发送报文:
+    QosCheckStremComplexData (-TsuID $tsuID -StreamSum $Data(streamNum) -Speed $Data(speedPercent) \
+	                    -SendPort $sendPort -StaPort $staPort -StatMode $statMode -Vlan $Data(vlan) \
+	                    -Pri $Data(pri) -SMac $port5_sourceMAC -DMac $port5_destinationMAC \
+                        -SampleTimes $sampleTimes -PktLenList $pktLenList \
+                        -SaveCfgFile $saveCfgtoFile -StaItem $statItem \
+                        -StatIteStopStream $statIteStopStream \
+						-Forwardbps $Data(forwardbps) \
+						-Forwardpps $Data(forwardpps) \
+						-AllowError $allowErrorQOSbps \
+                        -OltSvlanId $oltSvlanId -BlackStreamFlg $blackStreamFlg \
+                        );
+						
+
+资源释放：
+
+010 恢复队列绑定shaper模板0:
+ 	QosQsctTableSet (-TermName $term3 -index [lindex $ShaTcont0Queues 0] -pir_shp_mnum 0 -qshp_mode 0);
+ 	QosQsctTableSet (-TermName $term3 -index [lindex $ShaTcont0Queues 1] -pir_shp_mnum 0 -qshp_mode 0);
+ 	QosQsctTableSet (-TermName $term3 -index [lindex $ShaTcont0Queues 4] -pir_shp_mnum 0 -qshp_mode 0);
+ 	QosQsctTableSet (-TermName $term3 -index [lindex $ShaTcont0Queues 5] -pir_shp_mnum 0 -qshp_mode 0);
+
+020 延迟一段时间:
+    IasCommonDelay( -Time $waitTime);
+    
+030 删除端口加入vlan:
+ 	L2BcAllDel (-TermName $term3 -vlan $Data(vlan));
+
+040 恢复通用调度器绑定shaper模板0:
+ 	QosSsctTableSet (-TermName $term3 -index $free_sch_num0 -pir_shp_mnum 0 -sshp_mode 0);
+ 	QosSsctTableSet (-TermName $term3 -index $free_sch_num1 -pir_shp_mnum 0 -sshp_mode 0);
+ 	 
+050 恢复shaper模板:
+    QosShtTableSet (-TermName $term3 -index $Data(index0) -xir 0 -xbs 0);
+    QosShtTableSet (-TermName $term3 -index $Data(index1) -xir 0 -xbs 0);
+    QosShtTableSet (-TermName $term3 -index $Data(index2) -xir 0 -xbs 0);
+    QosShtTableSet (-TermName $term3 -index $Data(index3) -xir 0 -xbs 0);
+    QosShtTableSet (-TermName $term3 -index $Data(index4) -xir 0 -xbs 0);
+    QosShtTableSet (-TermName $term3 -index $Data(index5) -xir 0 -xbs 0);
+     	
+060 把队列从子调度器中删除:
+ 	QosQueueFromSchDel (-TermName $term3 -qid [lindex $ShaTcont0Queues 0]);
+ 	QosQueueFromSchDel (-TermName $term3 -qid [lindex $ShaTcont0Queues 1]);
+ 	QosQueueFromSchDel (-TermName $term3 -qid [lindex $ShaTcont0Queues 2]);
+ 	QosQueueFromSchDel (-TermName $term3 -qid [lindex $ShaTcont0Queues 3]);
+ 	QosQueueFromSchDel (-TermName $term3 -qid [lindex $ShaTcont0Queues 4]);
+ 	QosQueueFromSchDel (-TermName $term3 -qid [lindex $ShaTcont0Queues 5]);
+ 	QosQueueFromSchDel (-TermName $term3 -qid [lindex $ShaTcont0Queues 6]);
+ 	
+070 把子调度器从父调度器(逻辑端口)中删除:
+ 	QosSchFromSchDel (-TermName $term3 -schid $free_sch_num0);
+ 	QosSchFromSchDel (-TermName $term3 -schid $free_sch_num1);
+
+080 把队列挂回到父调度器(逻辑端口)上:
+ 	QosQueueToSchAdd (-TermName $term3 -schid $tcont0_port_num -qid [lindex $ShaTcont0Queues 0] -pri 0 -logic 1);
+ 	QosQueueToSchAdd (-TermName $term3 -schid $tcont0_port_num -qid [lindex $ShaTcont0Queues 1] -pri 1 -logic 1);
+ 	QosQueueToSchAdd (-TermName $term3 -schid $tcont0_port_num -qid [lindex $ShaTcont0Queues 2] -pri 2 -logic 1);
+ 	QosQueueToSchAdd (-TermName $term3 -schid $tcont0_port_num -qid [lindex $ShaTcont0Queues 3] -pri 3 -logic 1);
+ 	QosQueueToSchAdd (-TermName $term3 -schid $tcont0_port_num -qid [lindex $ShaTcont0Queues 4] -pri 4 -logic 1);
+ 	QosQueueToSchAdd (-TermName $term3 -schid $tcont0_port_num -qid [lindex $ShaTcont0Queues 5] -pri 5 -logic 1);
+ 	QosQueueToSchAdd (-TermName $term3 -schid $tcont0_port_num -qid [lindex $ShaTcont0Queues 6] -pri 6 -logic 1);
+
+090 恢复队列间的调度关系:
+ 	QosGssaTableSet (-TermName $term3 -index $tcont0_port_num -input0_gnum 7 -input1_gnum 6 -input2_gnum 5 -input3_gnum 4 -input4_gnum 3 -input5_gnum 2 -input6_gnum 1 -input7_gnum 0);
+ 	QosGssaTableSet (-TermName $term3 -index $free_sch_num0 -eqm_chid 0 -input0_gnum 0 -input1_gnum 0 -input2_gnum 0 -input3_gnum 0 -input4_gnum 0 -input5_gnum 0 -input6_gnum 0 -input7_gnum 0);
+ 	QosGssaTableSet (-TermName $term3 -index $free_sch_num1 -eqm_chid 0 -input0_gnum 0 -input1_gnum 0 -input2_gnum 0 -input3_gnum 0 -input4_gnum 0 -input5_gnum 0 -input6_gnum 0 -input7_gnum 0);
+ 	QosGssaTableSet (-TermName $term3 -index $free_sch_num2 -eqm_chid 0 -input0_gnum 0 -input1_gnum 0 -input2_gnum 0 -input3_gnum 0 -input4_gnum 0 -input5_gnum 0 -input6_gnum 0 -input7_gnum 0);
+ 	QosGssaTableSet (-TermName $term3 -index $free_sch_num3 -eqm_chid 0 -input0_gnum 0 -input1_gnum 0 -input2_gnum 0 -input3_gnum 0 -input4_gnum 0 -input5_gnum 0 -input6_gnum 0 -input7_gnum 0);
+ 	QosGssaTableSet (-TermName $term3 -index $free_sch_num4 -eqm_chid 0 -input0_gnum 0 -input1_gnum 0 -input2_gnum 0 -input3_gnum 0 -input4_gnum 0 -input5_gnum 0 -input6_gnum 0 -input7_gnum 0);
+ 	QosGssaTableSet (-TermName $term3 -index $free_sch_num5 -eqm_chid 0 -input0_gnum 0 -input1_gnum 0 -input2_gnum 0 -input3_gnum 0 -input4_gnum 0 -input5_gnum 0 -input6_gnum 0 -input7_gnum 0);
+ 	QosGssaTableSet (-TermName $term3 -index $free_sch_num6 -eqm_chid 0 -input0_gnum 0 -input1_gnum 0 -input2_gnum 0 -input3_gnum 0 -input4_gnum 0 -input5_gnum 0 -input6_gnum 0 -input7_gnum 0);
+ 	QosGssaTableSet (-TermName $term3 -index $free_sch_num7 -eqm_chid 0 -input0_gnum 0 -input1_gnum 0 -input2_gnum 0 -input3_gnum 0 -input4_gnum 0 -input5_gnum 0 -input6_gnum 0 -input7_gnum 0);
+ 	 	
+234.停流:
+    QosTsuRemoveStream (-TsuID $tsuID -Port $sendPort);
+    AsicCurCfgGet (-TermName $term3 );
